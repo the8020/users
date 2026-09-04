@@ -1,0 +1,7 @@
+version = 1
+program = "sessions-cleanup"
+summary = "Clean up expired authentication sessions"
+mutates_state = true
+restart_behavior = "none"
+[[examples]]
+command = "users.sessions.cleanup"

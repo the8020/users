@@ -1,0 +1,9 @@
+version = 1
+program = "remove"
+summary = "Remove a user"
+description = "Delete a user and all authentication sessions."
+usage = "<username>"
+mutates_state = true
+restart_behavior = "none"
+[[examples]]
+command = "users.remove alice"

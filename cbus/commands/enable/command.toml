@@ -1,0 +1,8 @@
+version = 1
+program = "enable"
+summary = "Enable a user"
+usage = "<username>"
+mutates_state = true
+restart_behavior = "none"
+[[examples]]
+command = "users.enable alice"

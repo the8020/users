@@ -1,0 +1,8 @@
+version = 1
+program = "invalidate-sessions"
+summary = "Invalidate user sessions"
+usage = "<username>"
+mutates_state = true
+restart_behavior = "none"
+[[examples]]
+command = "users.invalidate-sessions alice"

@@ -1,0 +1,9 @@
+version = 1
+program = "disable"
+summary = "Disable a user"
+description = "Disable a user and revoke current sessions."
+usage = "<username>"
+mutates_state = true
+restart_behavior = "none"
+[[examples]]
+command = "users.disable alice"

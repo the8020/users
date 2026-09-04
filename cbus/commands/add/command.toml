@@ -1,0 +1,15 @@
+version = 1
+program = "add"
+summary = "Add a user"
+description = "Create an enabled user."
+usage = "<username>"
+mutates_state = true
+restart_behavior = "none"
+[[secrets]]
+name = "password"
+required = true
+prompt = "Password: "
+confirmation_prompt = "Confirm password: "
+stdin_option = "password-stdin"
+[[examples]]
+command = "users.add alice"

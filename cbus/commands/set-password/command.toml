@@ -1,0 +1,15 @@
+version = 1
+program = "set-password"
+summary = "Set a user password"
+description = "Replace a password and revoke current sessions."
+usage = "<username>"
+mutates_state = true
+restart_behavior = "none"
+[[secrets]]
+name = "password"
+required = true
+prompt = "Password: "
+confirmation_prompt = "Confirm password: "
+stdin_option = "password-stdin"
+[[examples]]
+command = "users.set-password alice"

@@ -1,0 +1,4 @@
+schema = 1
+description = "80|20 users and authentication sessions"
+documentation_url = "https://github.com/the8020/users"
+license = "Apache-2.0"
