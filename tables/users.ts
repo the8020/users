@@ -1,4 +1,4 @@
-import { type Row, t, table, type TableDatabase } from "@the8020/db";
+import { type Row, t, table, type TableDatabase } from "/p/the8020/db/mod.ts";
 
 const Users = table("the8020__users__users", {
   username: t.text().primaryKey(),
@@ -9,7 +9,7 @@ const Users = table("the8020__users__users", {
   updatedAt: t.datetime().defaultNow(),
 });
 
-declare module "@the8020/db/types" {
+declare module "/p/the8020/db/types.ts" {
   interface Database extends TableDatabase<typeof Users> {}
 }
 

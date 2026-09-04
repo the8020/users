@@ -1,5 +1,5 @@
-import { db, type Selectable, sql } from "@the8020/db";
-import type { Database } from "@the8020/db/types";
+import { db, type Selectable, sql } from "/p/the8020/db/mod.ts";
+import type { Database } from "/p/the8020/db/types.ts";
 import { AdminCommandError, kernel } from "@the8020/kernel";
 import type { Kysely, Transaction } from "kysely";
 import Sessions from "../tables/sessions.ts";

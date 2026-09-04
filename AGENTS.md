@@ -29,9 +29,10 @@
   commands to non-discoverable ordinary programs. Their default exports receive
   untouched string arguments; invalid input, missing users, and duplicate users
   retain stable command error codes.
-- Ordinary package table access uses `@the8020/db` and Kysely so logical values
-  are encoded and decoded once by the shared descriptor codec. Package programs
-  must not compensate for SQLite/PostgreSQL physical-value differences.
+- Ordinary package table access uses `/p/the8020/db/mod.ts` and Kysely so
+  logical values are encoded and decoded once by the shared descriptor codec.
+  Package programs must not compensate for SQLite/PostgreSQL physical-value
+  differences.
 
 # Verification
 
