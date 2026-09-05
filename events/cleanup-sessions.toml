@@ -1,0 +1,3 @@
+event = "minute"
+description = "Remove expired authentication sessions"
+program = "the8020/users/sessions-cleanup"

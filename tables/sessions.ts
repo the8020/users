@@ -3,7 +3,6 @@ import { type Row, t, table, type TableDatabase } from "/p/the8020/db/mod.ts";
 const Sessions = table("the8020__users__sessions", {
   sessionId: t.text().primaryKey(),
   username: t.text(),
-  secretHash: t.text(),
   authVersion: t.integer(),
   createdAt: t.datetime().defaultNow(),
   expiresAt: t.datetime(),

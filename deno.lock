@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@std/assert@1.0.14": "1.0.14",
     "jsr:@std/internal@^1.0.10": "1.0.14",
+    "npm:@noble/hashes@2.4.0": "2.4.0",
     "npm:kysely@0.29.4": "0.29.4"
   },
   "jsr": {
@@ -17,6 +18,9 @@
     }
   },
   "npm": {
+    "@noble/hashes@2.4.0": {
+      "integrity": "sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA=="
+    },
     "kysely@0.29.4": {
       "integrity": "sha512-y5mVgQNkMbs1eK9Xyc0pmNdabN2wHhRYY/5r4W5HrUT1rYCEPeVNSj1RUJeSDKT3U0p+mXCvLgkrFuIafYI6BA=="
     }

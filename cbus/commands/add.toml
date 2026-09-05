@@ -1,15 +1,18 @@
 version = 1
+command = "users.add"
 program = "add"
 summary = "Add a user"
-description = "Create an enabled user."
-usage = "<username>"
+description = "Create a user without a password, or supply one using --password-stdin. Users without passwords cannot log in."
+usage = "<username> [--password-stdin]"
 mutates_state = true
 restart_behavior = "none"
 [[secrets]]
 name = "password"
-required = true
+required = false
 prompt = "Password: "
 confirmation_prompt = "Confirm password: "
 stdin_option = "password-stdin"
 [[examples]]
 command = "users.add alice"
+[[examples]]
+command = "users.add alice --password-stdin"

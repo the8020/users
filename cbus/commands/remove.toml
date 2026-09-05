@@ -1,4 +1,5 @@
 version = 1
+command = "users.remove"
 program = "remove"
 summary = "Remove a user"
 description = "Delete a user and all authentication sessions."

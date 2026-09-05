@@ -22,4 +22,9 @@ Deno.test("users own authentication identities and opaque sessions", () => {
       "updatedAt",
     ],
   );
+  assertEquals(
+    descriptorOf(Users).columns.find((column) => column.name === "passwordHash")
+      ?.default,
+    { kind: "literal", value: "" },
+  );
 });

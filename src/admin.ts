@@ -1,14 +1,19 @@
 import { db, type Selectable, sql } from "/p/the8020/db/mod.ts";
 import type { Database } from "/p/the8020/db/types.ts";
-import { AdminCommandError, kernel } from "@the8020/kernel";
+import { AdminCommandError } from "@the8020/kernel";
+import { hashPassword } from "./password.ts";
 import type { Kysely, Transaction } from "kysely";
 import Sessions from "../tables/sessions.ts";
 import Users, { type UserRow } from "../tables/users.ts";
 
 type User = Selectable<UserRow>;
-type PublicUser = Omit<User, "passwordHash">;
+type PublicUser = Omit<User, "passwordHash"> & { passwordSet: number };
 type Queryable = Pick<Kysely<Database>, "selectFrom">;
 type DatabaseTransaction = Transaction<Database>;
+// Return only a non-secret integer flag; CASE has the same result on both engines.
+const passwordSet = sql<number>`CASE WHEN ${
+  sql.ref(Users.passwordHash)
+} = '' THEN 0 ELSE 1 END`.as("passwordSet");
 
 function validateUsername(username: string): void {
   if (!/^[a-z0-9]{3,32}$/.test(username)) {
@@ -23,6 +28,7 @@ function summarize(record: PublicUser, activeSessions: number) {
   return {
     username: record.username,
     enabled: record.enabled,
+    has_password: record.passwordSet === 1,
     auth_version: record.authVersion,
     created_at: record.createdAt.toISOString(),
     updated_at: record.updatedAt.toISOString(),
@@ -35,6 +41,7 @@ async function user(username: string, database: Queryable = db) {
     .select([
       Users.username,
       Users.enabled,
+      passwordSet,
       Users.authVersion,
       Users.createdAt,
       Users.updatedAt,
@@ -47,7 +54,7 @@ async function user(username: string, database: Queryable = db) {
       message: `user ${username} was not found`,
     });
   }
-  if (!record.enabled) return summarize(record, 0);
+  if (!record.enabled || record.passwordSet === 0) return summarize(record, 0);
   const count = await database.selectFrom(Sessions.table)
     .select((expression) => expression.fn.countAll<number>().as("count"))
     .where(Sessions.username, "=", username)
@@ -57,9 +64,9 @@ async function user(username: string, database: Queryable = db) {
   return summarize(record, count.count);
 }
 
-export async function add(username: string, password: string) {
+export async function add(username: string, password = "") {
   validateUsername(username);
-  const passwordHash = await kernel.crypto.password.hash(password);
+  const passwordHash = password === "" ? "" : await hashPassword(password);
   const now = new Date();
   const result = await Users.insert({
     username,
@@ -85,6 +92,7 @@ export async function list() {
     Users.select([
       Users.username,
       Users.enabled,
+      passwordSet,
       Users.authVersion,
       Users.createdAt,
       Users.updatedAt,
@@ -97,7 +105,10 @@ export async function list() {
   const counts = new Map<string, number>();
   for (const session of sessions) {
     const account = users.get(session.username);
-    if (account?.enabled && account.authVersion === session.authVersion) {
+    if (
+      account?.enabled && account.passwordSet === 1 &&
+      account.authVersion === session.authVersion
+    ) {
       counts.set(session.username, (counts.get(session.username) ?? 0) + 1);
     }
   }
@@ -176,7 +187,7 @@ export function disable(username: string) {
 }
 
 export async function setPassword(username: string, password: string) {
-  const passwordHash = await kernel.crypto.password.hash(password);
+  const passwordHash = password === "" ? "" : await hashPassword(password);
   return await update(username, true, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({
@@ -212,7 +223,12 @@ export async function listSessions() {
       Sessions.createdAt,
       Sessions.expiresAt,
     ]).orderBy(Sessions.sessionId).execute(),
-    Users.select([Users.username, Users.enabled, Users.authVersion]).execute(),
+    Users.select([
+      Users.username,
+      Users.enabled,
+      passwordSet,
+      Users.authVersion,
+    ]).execute(),
   ]);
   const accounts = new Map(users.map((user) => [user.username, user]));
   const now = new Date();
@@ -225,7 +241,7 @@ export async function listSessions() {
         created_at: record.createdAt.toISOString(),
         expires_at: record.expiresAt.toISOString(),
         auth_version: record.authVersion,
-        valid: account?.enabled === true &&
+        valid: account?.enabled === true && account.passwordSet === 1 &&
           account.authVersion === record.authVersion && record.expiresAt > now,
       };
     }),

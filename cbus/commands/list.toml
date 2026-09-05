@@ -1,4 +1,5 @@
 version = 1
+command = "users.list"
 program = "list"
 summary = "List users"
 mutates_state = false

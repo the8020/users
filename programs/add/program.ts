@@ -4,6 +4,6 @@ import { add } from "../../src/admin.ts";
 export default function addUser(...args: string[]) {
   return add(
     requiredCommandArgument(args, 0, "username"),
-    kernel.execution.secret("password"),
+    kernel.execution.optionalSecret("password"),
   );
 }

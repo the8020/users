@@ -1,0 +1,4 @@
+schema = 1
+description = "Create the built-in system user when absent"
+entrypoint = "program.ts"
+discoverable = false

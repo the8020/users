@@ -1,4 +1,5 @@
 version = 1
+command = "users.sessions.cleanup"
 program = "sessions-cleanup"
 summary = "Clean up expired authentication sessions"
 mutates_state = true

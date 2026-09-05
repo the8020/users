@@ -1,4 +1,5 @@
 version = 1
+command = "users.disable"
 program = "disable"
 summary = "Disable a user"
 description = "Disable a user and revoke current sessions."
