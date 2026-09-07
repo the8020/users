@@ -23,10 +23,10 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 # Work Guidance
 
-- Apply account policy through this shared implementation across HTTP,
-  command, and native-adapter entrypoints. Keep principal integrity in the
-  kernel, session decisions here, and database representations in the shared
-  codec; verify failures at the owner and the affected entrypoint.
+- Apply account policy through this shared implementation across HTTP, command,
+  and native-adapter entrypoints. Keep principal integrity in the kernel,
+  session decisions here, and database representations in the shared codec;
+  verify failures at the owner and the affected entrypoint.
 
 # Verification
 
