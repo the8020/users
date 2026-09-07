@@ -36,7 +36,7 @@ function summarize(record: PublicUser, activeSessions: number) {
   };
 }
 
-async function user(username: string, database: Queryable = db) {
+export async function user(username: string, database: Queryable = db) {
   const record = await database.selectFrom(Users.table)
     .select([
       Users.username,
@@ -214,7 +214,7 @@ export function invalidateSessions(username: string) {
   });
 }
 
-export async function listSessions() {
+export async function listSessions(username?: string) {
   const [records, users] = await Promise.all([
     Sessions.select([
       Sessions.sessionId,
@@ -222,13 +222,19 @@ export async function listSessions() {
       Sessions.authVersion,
       Sessions.createdAt,
       Sessions.expiresAt,
-    ]).orderBy(Sessions.sessionId).execute(),
+    ]).$if(
+      username !== undefined,
+      (query) => query.where(Sessions.username, "=", username!),
+    ).orderBy(Sessions.sessionId).execute(),
     Users.select([
       Users.username,
       Users.enabled,
       passwordSet,
       Users.authVersion,
-    ]).execute(),
+    ]).$if(
+      username !== undefined,
+      (query) => query.where(Users.username, "=", username!),
+    ).execute(),
   ]);
   const accounts = new Map(users.map((user) => [user.username, user]));
   const now = new Date();

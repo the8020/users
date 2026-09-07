@@ -6,6 +6,8 @@ import {
   type TokenClaims,
 } from "@the8020/kernel";
 import { hashPassword, verifyPassword } from "./password.ts";
+import { fieldMetadata } from "/p/the8020/db/fields.ts";
+import { username } from "../types/user.ts";
 
 const globals = globalThis as unknown as Record<symbol, unknown>;
 globals[kernelDatabaseBackendSymbol] = "sqlite";
@@ -94,6 +96,25 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
   try {
     await admin.add("alice", "correct horse");
     await admin.add("passwordless");
+    const lookup = fieldMetadata(username)!.valueHelp!;
+    const beforeLookup = databaseCalls;
+    assertEquals(await lookup({ query: "", offset: 0, limit: 1 }), {
+      items: [{ value: "alice", label: "alice", description: undefined }],
+      more: true,
+    });
+    assertEquals(databaseCalls - beforeLookup, 1);
+    assertEquals(await lookup({ query: "", offset: 1, limit: 1 }), {
+      items: [{
+        value: "passwordless",
+        label: "passwordless",
+        description: undefined,
+      }],
+      more: false,
+    });
+    assertEquals(await lookup({ query: " ALI ", offset: 0, limit: 20 }), {
+      items: [{ value: "alice", label: "alice", description: undefined }],
+      more: false,
+    });
     assertEquals(await users.eligibleUser("passwordless"), undefined);
     assertEquals(await users.authenticatePassword("alice", "wrong"), undefined);
     const result = await users.login(request, {
@@ -107,6 +128,19 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     assert(result.setCookie.includes("Path=/; HttpOnly; SameSite=Lax"));
     assert(result.setCookie.includes("; Secure"));
     const claims = tokens.get(result.token)!;
+    const account = await admin.user("alice");
+    assertEquals(account.active_authentication_session_count, 1);
+    assertEquals(Object.hasOwn(account, "passwordHash"), false);
+    const beforeSessionLookup = databaseCalls;
+    assertEquals(
+      (await admin.listSessions("alice")).authentication_sessions.length,
+      1,
+    );
+    assertEquals(databaseCalls - beforeSessionLookup, 2);
+    assertEquals(
+      (await admin.listSessions("passwordless")).authentication_sessions,
+      [],
+    );
     assertEquals(claims.sub, "user:alice");
     assertEquals(claims.iss, "the8020");
     assertEquals(claims.aud, "the8020");
@@ -121,6 +155,14 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     });
     const secondClaims = tokens.get(second.token!)!;
     await admin.disable("alice");
+    assertEquals(await lookup({ query: "alice", offset: 0, limit: 20 }), {
+      items: [{
+        value: "alice",
+        label: "alice",
+        description: "Disabled account",
+      }],
+      more: false,
+    });
     assertEquals(await users.validateSession(secondClaims), undefined);
     assertEquals(await users.eligibleUser("alice"), undefined);
     assertEquals(

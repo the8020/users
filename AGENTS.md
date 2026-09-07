@@ -121,6 +121,8 @@ below.
   authentication-session policy.
 - [tables/AGENTS.md](tables/AGENTS.md): Describe users and authentication
   sessions.
+- [types/AGENTS.md](types/AGENTS.md): Define reusable user fields, structures,
+  and paged value help for database and UUI consumers.
 
 # Purpose
 
@@ -131,7 +133,8 @@ below.
 # Ownership
 
 - Own authored schemas, administrative command programs, user mutations, and
-  authentication sessions and token claims.
+  authentication sessions and token claims. The Users UUI program owns account
+  lists and details, password editing, and sign-in administration.
 - Own account/password rules, Argon2id hashing and verification, login/logout,
   session issuance/validation/revocation, and application cookie construction.
   Do not own UUI application sessions, private signing keys, kernel principals,
@@ -174,6 +177,12 @@ below.
   logical values are encoded and decoded once by the shared descriptor codec.
   Package programs must not compensate for SQLite/PostgreSQL physical-value
   differences.
+- `the8020/users/users` opens the account catalog or a supplied username. Shared
+  user field help calls this ordinary program lazily; account details link to
+  the UUI package's user-filtered sessions program. Keep sign-in status and
+  common actions ahead of technical details and deletion, which live under
+  Advanced. Mutations reuse `src/admin.ts`; UI programs never load password
+  hashes.
 
 - `mod.ts` exposes login/logout/currentUser and the shared authentication
   function. Protected HTTP/WebSocket request setup invokes it inside the
@@ -201,6 +210,16 @@ below.
   service, isolation, or execution mechanism. Minute expiry cleanup uses
   `events/cleanup-sessions.toml` with `event = "minute"` to invoke the existing
   sessions-cleanup program.
+
+# Work Guidance
+
+- Keep account and authentication policy in this Deno package and use the
+  ordinary Worker and typed cryptographic bridge. Do not move login rules into
+  the kernel or add a separate authentication runtime.
+- Reuse user schemas and the shared database codec across consumers. Keep
+  authentication-session lifetime distinct from UUI, terminal, and execution
+  lifetimes, and verify policy changes through the relevant entrypoint with
+  bounded queries and cleanup.
 
 # Verification
 

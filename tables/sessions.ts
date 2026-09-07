@@ -1,8 +1,9 @@
 import { type Row, t, table, type TableDatabase } from "/p/the8020/db/mod.ts";
+import { username } from "../types/user.ts";
 
 const Sessions = table("the8020__users__sessions", {
   sessionId: t.text().primaryKey(),
-  username: t.text(),
+  username: t.from(username),
   authVersion: t.integer(),
   createdAt: t.datetime().defaultNow(),
   expiresAt: t.datetime(),

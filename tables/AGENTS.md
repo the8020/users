@@ -17,6 +17,8 @@ Parent DOX: [users DOX](../AGENTS.md).
   session secrets.
 - Keep expiry cleanup indexed and preserve account auth-version/session
   identities.
+- Reuse the user fields from `../types/user.ts`; table-local keys and defaults
+  remain explicit.
 
 # Work Guidance
 

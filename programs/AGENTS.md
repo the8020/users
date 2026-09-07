@@ -8,7 +8,7 @@ Parent DOX: [users DOX](../AGENTS.md).
 # Ownership
 
 - Own manifests and ordinary programs; `../src/` owns shared authentication and
-  account behavior.
+  account behavior. The users child owns interactive account administration.
 
 # Local Contracts
 
@@ -26,4 +26,5 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 # Child DOX Index
 
-No child DOX documents. This document owns the entire local scope.
+- [users/AGENTS.md](users/AGENTS.md): Provide the account catalog, linked user
+  detail, passwords, sign-ins, and advanced account actions.
