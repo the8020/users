@@ -3,22 +3,18 @@ import { field, z } from "/p/the8020/db/fields.ts";
 export const username: z.ZodString = field(z.string(), {
   label: "User",
   description: "A user account, identified by its username.",
-  valueHelp: async ({ query, offset, limit }) => {
+  valueHelp: async (request) => {
     const { default: Users } = await import("../tables/users.ts");
-    const records = await Users.select([Users.username, Users.enabled])
-      .where(Users.username, "like", `%${query.trim().toLowerCase()}%`)
-      .orderBy(Users.username)
-      .offset(offset)
-      .limit(limit + 1)
-      .execute();
-    return {
-      items: records.slice(0, limit).map((record) => ({
-        value: record.username,
-        label: record.username,
-        description: record.enabled ? undefined : "Disabled account",
-      })),
-      more: records.length > limit,
-    };
+    const { lookupPage } = await import("/p/the8020/db/lookup.ts");
+    return lookupPage(
+      z.object({
+        username,
+        fullName: userProfile.shape.fullName,
+        enabled: userSummary.shape.enabled,
+      }),
+      Users.select([Users.username, Users.fullName, Users.enabled]),
+      request,
+    );
   },
   open: async (value) => {
     const { default: users } = await import("../programs/users/program.ts");

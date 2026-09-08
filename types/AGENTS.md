@@ -16,9 +16,10 @@ Parent DOX: [users DOX](../AGENTS.md).
   controls remain screen-owned and start empty; creation usernames have no
   existing-account lookup or navigation.
 
-- Field imports perform no queries. Value help lazily reads only usernames and
-  enabled status, searches in the database, and returns one bounded page plus
-  whether more results exist.
+- Field imports perform no queries. Value help exposes username, full name, and
+  enabled fields, with username first. The shared SQL lookup applies full list
+  queries before paging and returns matching counts; credentials never enter
+  lookup results.
 - `username.open` lazily calls the owning Users UUI program with the value;
   importing field definitions never loads a screen or performs runtime work.
 - Include disabled accounts for references to historical work and identify them

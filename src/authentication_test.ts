@@ -99,23 +99,29 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     await admin.add("passwordless");
     const lookup = fieldMetadata(username)!.valueHelp!;
     const beforeLookup = databaseCalls;
-    assertEquals(await lookup({ query: "", offset: 0, limit: 1 }), {
-      items: [{ value: "alice", label: "alice", description: undefined }],
-      more: true,
+    const query = { search: "", filters: {}, sort: null };
+    const first = await lookup({ query, offset: 0, limit: 1 });
+    assertEquals(first.rows, [{
+      username: "alice",
+      fullName: "Alice Example",
+      enabled: true,
+    }]);
+    assertEquals([first.more, first.totalItems], [true, 2]);
+    assertEquals(databaseCalls - beforeLookup, 2);
+    const last = await lookup({ query, offset: 1, limit: 1 });
+    assertEquals(last.rows, [{
+      username: "passwordless",
+      fullName: "",
+      enabled: true,
+    }]);
+    assertEquals([last.more, last.totalItems], [false, 2]);
+    const found = await lookup({
+      query: { ...query, search: " EXAMPLE " },
+      offset: 0,
+      limit: 20,
     });
-    assertEquals(databaseCalls - beforeLookup, 1);
-    assertEquals(await lookup({ query: "", offset: 1, limit: 1 }), {
-      items: [{
-        value: "passwordless",
-        label: "passwordless",
-        description: undefined,
-      }],
-      more: false,
-    });
-    assertEquals(await lookup({ query: " ALI ", offset: 0, limit: 20 }), {
-      items: [{ value: "alice", label: "alice", description: undefined }],
-      more: false,
-    });
+    assertEquals(found.rows, first.rows);
+    assertEquals([found.more, found.totalItems], [false, 1]);
     assertEquals(await users.eligibleUser("passwordless"), undefined);
     assertEquals(await users.authenticatePassword("alice", "wrong"), undefined);
     const result = await users.login(request, {
@@ -176,14 +182,17 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     });
     const secondClaims = tokens.get(second.token!)!;
     await admin.disable("alice");
-    assertEquals(await lookup({ query: "alice", offset: 0, limit: 20 }), {
-      items: [{
-        value: "alice",
-        label: "alice",
-        description: "Disabled account",
-      }],
-      more: false,
+    const disabled = await lookup({
+      query: { ...query, search: "alice" },
+      offset: 0,
+      limit: 20,
     });
+    assertEquals(disabled.rows, [{
+      username: "alice",
+      fullName: "Alice Updated",
+      enabled: false,
+    }]);
+    assertEquals([disabled.more, disabled.totalItems], [false, 1]);
     assertEquals(await users.validateSession(secondClaims), undefined);
     assertEquals(await users.eligibleUser("alice"), undefined);
     assertEquals(
