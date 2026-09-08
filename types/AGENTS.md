@@ -6,9 +6,15 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 # Ownership
 
-- `user.ts` exports `username` and the ordinary Zod `userSummary` structure.
+- `user.ts` exports `username`, the editable `userProfile` structure, and
+  `userSummary`. Profile fields are shared by storage, validation, and screens.
 
 # Local Contracts
+
+- `accountInfo`, `newUsername`, and `authenticationSession` own labels and help
+  for account status, password inputs, technical details, and sign-ins. Password
+  controls remain screen-owned and start empty; creation usernames have no
+  existing-account lookup or navigation.
 
 - Field imports perform no queries. Value help lazily reads only usernames and
   enabled status, searches in the database, and returns one bounded page plus

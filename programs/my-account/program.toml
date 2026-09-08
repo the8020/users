@@ -1,0 +1,4 @@
+schema = 1
+description = "View and edit your account details and password"
+discoverable = false
+uui = true

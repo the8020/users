@@ -104,6 +104,10 @@ Default section order:
 When the user requests a durable behavior change, record it here or in the
 relevant child AGENTS.md
 
+- User administration and My account share profile/password forms and call
+  users-owned operations directly. UUI may call the My account program directly
+  from its quick menu; no hooks or command-bus roundtrip are needed.
+
 ## Child DOX Index
 
 This root retains repository-wide contracts and files outside the child scopes
@@ -134,7 +138,8 @@ below.
 
 - Own authored schemas, administrative command programs, user mutations, and
   authentication sessions and token claims. The Users UUI program owns account
-  lists and details, password editing, and sign-in administration.
+  lists and details, full-name and password editing, and sign-in administration.
+  My account reuses these forms for the authenticated user's own details.
 - Own account/password rules, Argon2id hashing and verification, login/logout,
   session issuance/validation/revocation, and application cookie construction.
   Do not own UUI application sessions, private signing keys, kernel principals,
@@ -183,6 +188,10 @@ below.
   common actions ahead of technical details and deletion, which live under
   Advanced. Mutations reuse `src/admin.ts`; UI programs never load password
   hashes.
+- `the8020/users/my-account` takes no target username and reads `currentUser()`.
+  It opens shared detail/profile/password forms without account enablement,
+  deletion, or password removal. Full names are trimmed, limited to 200
+  characters, and default to empty; profile saves preserve existing sign-ins.
 
 - `mod.ts` exposes login/logout/currentUser and the shared authentication
   function. Protected HTTP/WebSocket request setup invokes it inside the

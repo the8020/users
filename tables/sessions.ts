@@ -1,10 +1,10 @@
 import { type Row, t, table, type TableDatabase } from "/p/the8020/db/mod.ts";
-import { username } from "../types/user.ts";
+import { accountInfo, authenticationSession, username } from "../types/user.ts";
 
 const Sessions = table("the8020__users__sessions", {
-  sessionId: t.text().primaryKey(),
+  sessionId: t.from(authenticationSession.shape.id).primaryKey(),
   username: t.from(username),
-  authVersion: t.integer(),
+  authVersion: t.from(accountInfo.shape.authVersion),
   createdAt: t.datetime().defaultNow(),
   expiresAt: t.datetime(),
 }, {

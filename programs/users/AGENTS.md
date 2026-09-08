@@ -8,14 +8,21 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 
 - Own the Users manifest and ordinary account, password, sign-in, and advanced
   screens. `../../src/admin.ts` owns account queries and mutations.
+- Export `userDetail` for My account to reuse the profile and password forms.
 
 # Local Contracts
+
+- Account, password, and sign-in fields reuse `types/user.ts` labels and help;
+  only presentation hints belong in the screen.
 
 - The default function opens the catalog or a supplied username. Retain Models
   across refreshes and use ordinary UUI pages/modals for related screens.
 - Reuse semantic username/userSummary definitions in list and detail schemas.
   Put sign-in status and common account actions first. Keep authentication
   version, timestamps, and deletion under Advanced.
+- List full names and edit them through the shared `userProfile` schema in a
+  modal. Save persists; Back cancels. Self-service hides and rejects enablement,
+  Advanced/deletion, and password-removal actions.
 - Password forms begin empty and clear submitted values after success/failure.
   Never load stored hashes or passwords. Creating a passwordless account remains
   supported; removing a password, disabling, and deleting require confirmation.
@@ -31,7 +38,8 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 
 - Run `deno task check` and `deno task test` from the repository root.
 - UUI's `deno task test:programs-browser` drives the real screens with SQLite,
-  including password/enable changes, navigation, and desktop/mobile layouts.
+  including full-name/password/enable changes, My account from the quick menu,
+  retained navigation, and desktop/mobile layouts.
 
 # Child DOX Index
 

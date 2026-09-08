@@ -9,25 +9,35 @@ import {
   z,
 } from "/p/the8020/uui/mod.ts";
 import * as accounts from "../../src/admin.ts";
-import { username, userSummary } from "../../types/user.ts";
+import {
+  accountInfo,
+  authenticationSession,
+  newUsername,
+  username,
+  userProfile,
+  userSummary,
+} from "../../types/user.ts";
 
 const UserRow = userSummary.extend({
-  signIn: field(z.string(), { label: "Sign-in" }),
-  activeSessions: field(z.number(), { label: "Active sign-ins" }),
+  signIn: accountInfo.shape.signIn,
+  activeSessions: accountInfo.shape.activeSessions,
 });
 const UserList = z.object({ users: z.array(UserRow) });
 const Account = UserRow.pick({
   username: true,
+  fullName: true,
   signIn: true,
   activeSessions: true,
 }).extend({
   username: field(username, { readOnly: true, open: undefined }),
 });
-const SignIn = z.object({
-  id: z.string(),
-  created: field(z.string(), { label: "Signed in", semanticType: "datetime" }),
-  expires: field(z.string(), { label: "Expires", semanticType: "datetime" }),
-  status: field(z.string(), { label: "Status" }),
+const SignIn = authenticationSession.extend({
+  created: field(authenticationSession.shape.created, {
+    semanticType: "datetime",
+  }),
+  expires: field(authenticationSession.shape.expires, {
+    semanticType: "datetime",
+  }),
 });
 const SignIns = z.object({ sessions: z.array(SignIn) });
 type User = Awaited<ReturnType<typeof accounts.user>>;
@@ -35,6 +45,7 @@ type User = Awaited<ReturnType<typeof accounts.user>>;
 function summary(user: User): z.infer<typeof UserRow> {
   return {
     username: user.username,
+    fullName: user.full_name,
     enabled: user.enabled,
     signIn: !user.enabled
       ? "Disabled"
@@ -65,7 +76,7 @@ export default async function usersProgram(
           type: "list",
           bind: "users",
           key: "username",
-          display: ["username", "signIn", "activeSessions"],
+          display: ["username", "fullName", "signIn", "activeSessions"],
         },
       },
       header: {
@@ -86,7 +97,10 @@ export default async function usersProgram(
   }
 }
 
-async function userDetail(name: string): Promise<void> {
+export async function userDetail(
+  name: string,
+  selfService = false,
+): Promise<void> {
   let model: Model<z.infer<typeof Account>> | undefined;
   while (true) {
     let user: User;
@@ -99,12 +113,13 @@ async function userDetail(name: string): Promise<void> {
     model ??= new Model(summary(user));
     Object.assign(model.data, summary(user));
     const event = await callScreen({
-      id: "user-detail",
-      title: `User ${name}`,
+      id: selfService ? "my-account" : "user-detail",
+      title: selfService ? "My account" : `User ${name}`,
       schema: Account,
       model,
       controls: [
         { id: "username", bind: "username", readOnly: true },
+        { id: "fullName", bind: "fullName", readOnly: true, length: "long" },
         { id: "signIn", bind: "signIn", readOnly: true, length: "short" },
         {
           id: "activeSessions",
@@ -118,7 +133,7 @@ async function userDetail(name: string): Promise<void> {
         id: "user-detail",
         root: {
           type: "detail",
-          controls: ["username", "signIn", "activeSessions"],
+          controls: ["username", "fullName", "signIn", "activeSessions"],
           actions: ["sign-ins", "ui-sessions"],
         },
       },
@@ -128,26 +143,30 @@ async function userDetail(name: string): Promise<void> {
       ],
       header: {
         actions: [
+          { id: "edit", label: "Edit details", kind: "primary" },
           {
             id: "password",
             label: user.has_password ? "Change password" : "Set password",
-            kind: "primary",
           },
-          {
-            id: "enabled",
-            label: user.enabled ? "Disable user" : "Enable user",
-          },
+          ...(!selfService
+            ? [{
+              id: "enabled",
+              label: user.enabled ? "Disable user" : "Enable user",
+            }, { id: "advanced", label: "Advanced" }]
+            : []),
           { id: "refresh", label: "Refresh" },
-          { id: "advanced", label: "Advanced" },
         ],
       },
     });
     if (event.action === BACK_EVENT) return;
     try {
-      if (event.action === "password") {
-        await presentModal(() => changePassword(user));
+      if (event.action === "edit") {
+        await presentModal(() => editDetails(user));
       }
-      if (event.action === "enabled") {
+      if (event.action === "password") {
+        await presentModal(() => changePassword(user, !selfService));
+      }
+      if (!selfService && event.action === "enabled") {
         if (
           !user.enabled ||
           await confirm(
@@ -171,7 +190,8 @@ async function userDetail(name: string): Promise<void> {
         await presentPage(() => sessions(name));
       }
       if (
-        event.action === "advanced" && await presentPage(() => advanced(user))
+        !selfService && event.action === "advanced" &&
+        await presentPage(() => advanced(user))
       ) return;
     } catch (error) {
       showError(error);
@@ -179,30 +199,49 @@ async function userDetail(name: string): Promise<void> {
   }
 }
 
+async function editDetails(user: User): Promise<void> {
+  const model = new Model({ fullName: user.full_name });
+  while (true) {
+    const event = await callScreen({
+      id: "user-edit",
+      title: "Edit details",
+      schema: userProfile,
+      model,
+      controls: [{ bind: "fullName", length: "long" }],
+      header: {
+        actions: [{ id: "save", label: "Save details", kind: "primary" }],
+      },
+    });
+    if (event.action === BACK_EVENT) return;
+    if (event.action !== "save") continue;
+    try {
+      await accounts.updateDetails(user.username, model.data);
+      sendMessage("User details saved", "success");
+      return;
+    } catch (error) {
+      showError(error);
+    }
+  }
+}
+
 async function createUser(): Promise<string | undefined> {
-  const Screen = z.object({
-    username: field(username, {
-      label: "Username",
-      description: "Use 3–32 lowercase letters or digits.",
-      open: undefined,
-      valueHelp: undefined,
-      length: "long",
-    }),
-    password: field(z.string(), {
-      label: "Password",
+  const Screen = userProfile.extend({
+    username: field(newUsername, { length: "long" }),
+    password: field(accountInfo.shape.password, {
       control: "password",
       length: "long",
-      description: "Leave empty to create an account that cannot sign in.",
     }),
   });
-  const model = new Model({ username: "", password: "" });
+  const model = new Model({ username: "", fullName: "", password: "" });
   while (true) {
     const event = await callScreen({
       id: "user-add",
       title: "Add user",
       schema: Screen,
       model,
-      controls: [{ bind: "username" }, { bind: "password" }],
+      controls: [{ bind: "username" }, { bind: "fullName" }, {
+        bind: "password",
+      }],
       header: {
         actions: [{ id: "create", label: "Create user", kind: "primary" }],
       },
@@ -213,7 +252,11 @@ async function createUser(): Promise<string | undefined> {
     }
     if (event.action !== "create") continue;
     try {
-      await accounts.add(model.data.username, model.data.password);
+      await accounts.add(
+        model.data.username,
+        model.data.password,
+        model.data.fullName,
+      );
       sendMessage(`Created ${model.data.username}`, "success");
       return model.data.username;
     } catch (error) {
@@ -224,15 +267,13 @@ async function createUser(): Promise<string | undefined> {
   }
 }
 
-async function changePassword(user: User): Promise<void> {
+async function changePassword(user: User, allowRemoval = true): Promise<void> {
   const Screen = z.object({
-    password: field(z.string(), {
-      label: "New password",
+    password: field(accountInfo.shape.newPassword, {
       control: "password",
       length: "long",
     }),
-    confirmation: field(z.string(), {
-      label: "Repeat password",
+    confirmation: field(accountInfo.shape.passwordConfirmation, {
       control: "password",
       length: "long",
     }),
@@ -249,7 +290,7 @@ async function changePassword(user: User): Promise<void> {
       header: {
         actions: [
           { id: "save", label: "Save password", kind: "primary" },
-          ...(user.has_password
+          ...(allowRemoval && user.has_password
             ? [{
               id: "remove",
               label: "Remove password",
@@ -264,7 +305,7 @@ async function changePassword(user: User): Promise<void> {
       return;
     }
     try {
-      if (event.action === "remove") {
+      if (allowRemoval && event.action === "remove") {
         if (
           !await confirm(
             `Remove the password for ${user.username}?`,
@@ -371,13 +412,9 @@ async function signIns(name: string): Promise<void> {
 
 async function advanced(user: User): Promise<boolean> {
   const Screen = z.object({
-    created: field(z.string(), { label: "Created", readOnly: true }),
-    updated: field(z.string(), { label: "Last changed", readOnly: true }),
-    authVersion: field(z.number(), {
-      label: "Authentication version",
-      readOnly: true,
-      description: "Changes when existing sign-ins are invalidated.",
-    }),
+    created: field(accountInfo.shape.created, { readOnly: true }),
+    updated: field(accountInfo.shape.updated, { readOnly: true }),
+    authVersion: field(accountInfo.shape.authVersion, { readOnly: true }),
   });
   const model = new Model({
     created: user.created_at,

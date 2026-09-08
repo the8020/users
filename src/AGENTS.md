@@ -16,6 +16,10 @@ Parent DOX: [users DOX](../AGENTS.md).
 - `admin.user(username)` supplies one non-secret account summary to both
   mutations and UUI. `listSessions(username?)` filters at the database when
   supplied, while parameterless command behavior remains unchanged.
+- `add` accepts an optional full name; `updateDetails` validates the shared
+  profile schema and updates details/timestamp without changing authentication
+  version or sessions. Both administration and self-service reuse `setPassword`
+  for hashing and session invalidation.
 - Authenticate within the existing target Worker; the kernel owns JWT signing
   and verification while this package validates account/session policy.
 - Login and logout own cookie construction and revocation; credentials never

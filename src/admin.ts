@@ -5,6 +5,8 @@ import { hashPassword } from "./password.ts";
 import type { Kysely, Transaction } from "kysely";
 import Sessions from "../tables/sessions.ts";
 import Users, { type UserRow } from "../tables/users.ts";
+import { userProfile } from "../types/user.ts";
+import type { z } from "/p/the8020/db/fields.ts";
 
 type User = Selectable<UserRow>;
 type PublicUser = Omit<User, "passwordHash"> & { passwordSet: number };
@@ -27,6 +29,7 @@ function validateUsername(username: string): void {
 function summarize(record: PublicUser, activeSessions: number) {
   return {
     username: record.username,
+    full_name: record.fullName,
     enabled: record.enabled,
     has_password: record.passwordSet === 1,
     auth_version: record.authVersion,
@@ -40,6 +43,7 @@ export async function user(username: string, database: Queryable = db) {
   const record = await database.selectFrom(Users.table)
     .select([
       Users.username,
+      Users.fullName,
       Users.enabled,
       passwordSet,
       Users.authVersion,
@@ -64,12 +68,14 @@ export async function user(username: string, database: Queryable = db) {
   return summarize(record, count.count);
 }
 
-export async function add(username: string, password = "") {
+export async function add(username: string, password = "", fullName = "") {
   validateUsername(username);
+  const profile = userProfile.parse({ fullName });
   const passwordHash = password === "" ? "" : await hashPassword(password);
   const now = new Date();
   const result = await Users.insert({
     username,
+    ...profile,
     passwordHash,
     enabled: true,
     authVersion: 1,
@@ -91,6 +97,7 @@ export async function list() {
   const [records, sessions] = await Promise.all([
     Users.select([
       Users.username,
+      Users.fullName,
       Users.enabled,
       passwordSet,
       Users.authVersion,
@@ -157,6 +164,20 @@ async function update(
         .execute();
     }
     return { user: await user(username, transaction) };
+  });
+}
+
+export function updateDetails(
+  username: string,
+  details: z.infer<typeof userProfile>,
+) {
+  const profile = userProfile.parse(details);
+  return update(username, false, async (transaction) => {
+    const result = await transaction.updateTable(Users.table)
+      .set({ ...profile, updatedAt: new Date() })
+      .where(Users.username, "=", username)
+      .executeTakeFirst();
+    return result.numUpdatedRows;
   });
 }
 

@@ -15,6 +15,7 @@ Deno.test("users own authentication identities and opaque sessions", () => {
     descriptorOf(Users).columns.map((column) => column.name),
     [
       "username",
+      "fullName",
       "passwordHash",
       "enabled",
       "authVersion",

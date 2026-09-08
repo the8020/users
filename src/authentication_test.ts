@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { DatabaseSync } from "node:sqlite";
 import {
   kernelDatabaseBackendSymbol,
@@ -33,7 +33,8 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
   const database = new DatabaseSync(":memory:");
   database.exec(`CREATE TABLE the8020__users__users (
     username TEXT PRIMARY KEY, passwordHash TEXT NOT NULL, enabled INTEGER NOT NULL,
-    authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL);
+    authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL,
+    fullName TEXT NOT NULL DEFAULT '');
     CREATE TABLE the8020__users__sessions (sessionId TEXT PRIMARY KEY, username TEXT NOT NULL,
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, expiresAt TEXT NOT NULL);`);
   const tokens = new Map<string, TokenClaims>();
@@ -94,7 +95,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     headers: { cookie: "the8020_auth=stale" },
   });
   try {
-    await admin.add("alice", "correct horse");
+    await admin.add("alice", "correct horse", " Alice Example ");
     await admin.add("passwordless");
     const lookup = fieldMetadata(username)!.valueHelp!;
     const beforeLookup = databaseCalls;
@@ -129,8 +130,28 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     assert(result.setCookie.includes("; Secure"));
     const claims = tokens.get(result.token)!;
     const account = await admin.user("alice");
+    assertEquals(account.full_name, "Alice Example");
     assertEquals(account.active_authentication_session_count, 1);
     assertEquals(Object.hasOwn(account, "passwordHash"), false);
+    const updated = await admin.updateDetails("alice", {
+      fullName: " Alice Updated ",
+    });
+    assertEquals(updated.user.full_name, "Alice Updated");
+    assertEquals(updated.user.auth_version, account.auth_version);
+    assertEquals(updated.user.active_authentication_session_count, 1);
+    assertEquals((await users.validateSession(claims))?.username, "alice");
+    assertEquals(
+      (await admin.list()).users.find((user) => user.username === "alice")
+        ?.full_name,
+      "Alice Updated",
+    );
+    assertThrows(() =>
+      admin.updateDetails("alice", { fullName: "x".repeat(201) })
+    );
+    await assertRejects(() =>
+      admin.updateDetails("missing", { fullName: "Missing" })
+    );
+    assertEquals((await admin.user("alice")).full_name, "Alice Updated");
     const beforeSessionLookup = databaseCalls;
     assertEquals(
       (await admin.listSessions("alice")).authentication_sessions.length,
@@ -176,9 +197,27 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     await admin.enable("alice");
     assertEquals(await users.validateSession(secondClaims), undefined);
 
-    const third = await users.login(request, {
+    const beforeReset = await users.login(request, {
       username: "alice",
       password: "correct horse",
+    });
+    await admin.setPassword("alice", "updated password");
+    assertEquals(
+      await users.validateSession(tokens.get(beforeReset.token!)!),
+      undefined,
+    );
+    assertEquals(
+      await users.authenticatePassword("alice", "correct horse"),
+      undefined,
+    );
+    assertEquals(
+      (await users.authenticatePassword("alice", "updated password"))?.username,
+      "alice",
+    );
+
+    const third = await users.login(request, {
+      username: "alice",
+      password: "updated password",
     });
     const validRequest = new Request(request.url, {
       headers: { cookie: `the8020_auth=${third.token}` },

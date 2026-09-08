@@ -28,3 +28,5 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 - [users/AGENTS.md](users/AGENTS.md): Provide the account catalog, linked user
   detail, passwords, sign-ins, and advanced account actions.
+- [my-account/AGENTS.md](my-account/AGENTS.md): Open the authenticated user's
+  profile and password forms from the UUI quick menu.
