@@ -1,6 +1,6 @@
 version = 1
 command = "users.disable"
-program = "disable"
+program = "the8020/users/disable"
 summary = "Disable a user"
 description = "Disable a user and revoke current sessions."
 usage = "<username>"

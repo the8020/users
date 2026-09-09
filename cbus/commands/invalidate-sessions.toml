@@ -1,6 +1,6 @@
 version = 1
 command = "users.invalidate-sessions"
-program = "invalidate-sessions"
+program = "the8020/users/invalidate-sessions"
 summary = "Invalidate user sessions"
 usage = "<username>"
 mutates_state = true

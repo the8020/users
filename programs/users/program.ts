@@ -29,7 +29,7 @@ const Account = UserRow.pick({
   signIn: true,
   activeSessions: true,
 }).extend({
-  username: field(username, { readOnly: true, open: undefined }),
+  username: field(username, { readOnly: true }),
 });
 const SignIn = authenticationSession.extend({
   created: field(authenticationSession.shape.created, {

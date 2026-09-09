@@ -1,6 +1,6 @@
 version = 1
 command = "users.sessions.cleanup"
-program = "sessions-cleanup"
+program = "the8020/users/sessions-cleanup"
 summary = "Clean up expired authentication sessions"
 mutates_state = true
 restart_behavior = "none"

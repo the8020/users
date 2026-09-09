@@ -1,6 +1,6 @@
 version = 1
 command = "users.sessions.list"
-program = "sessions-list"
+program = "the8020/users/sessions-list"
 summary = "List authentication sessions"
 mutates_state = false
 restart_behavior = "none"

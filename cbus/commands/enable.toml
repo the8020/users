@@ -1,6 +1,6 @@
 version = 1
 command = "users.enable"
-program = "enable"
+program = "the8020/users/enable"
 summary = "Enable a user"
 usage = "<username>"
 mutates_state = true

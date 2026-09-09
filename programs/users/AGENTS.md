@@ -18,8 +18,9 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 - The default function opens the catalog or a supplied username. Retain Models
   across refreshes and use ordinary UUI pages/modals for related screens.
 - Reuse semantic username/userSummary definitions in list and detail schemas.
-  Put sign-in status and common account actions first. Keep authentication
-  version, timestamps, and deletion under Advanced.
+  Read-only usernames retain value help and navigation on account details. Put
+  sign-in status and common account actions first. Keep authentication version,
+  timestamps, and deletion under Advanced.
 - List full names and edit them through the shared `userProfile` schema in a
   modal. Save persists; Back cancels. Self-service hides and rejects enablement,
   Advanced/deletion, and password-removal actions.

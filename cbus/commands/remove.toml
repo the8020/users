@@ -1,6 +1,6 @@
 version = 1
 command = "users.remove"
-program = "remove"
+program = "the8020/users/remove"
 summary = "Remove a user"
 description = "Delete a user and all authentication sessions."
 usage = "<username>"

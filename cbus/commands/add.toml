@@ -1,6 +1,6 @@
 version = 1
 command = "users.add"
-program = "add"
+program = "the8020/users/add"
 summary = "Add a user"
 description = "Create a user without a password, or supply one using --password-stdin. Users without passwords cannot log in."
 usage = "<username> [--password-stdin]"

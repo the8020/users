@@ -1,6 +1,6 @@
 version = 1
 command = "users.sessions.revoke"
-program = "sessions-revoke"
+program = "the8020/users/sessions-revoke"
 summary = "Revoke an authentication session"
 usage = "<session-id>"
 mutates_state = true
