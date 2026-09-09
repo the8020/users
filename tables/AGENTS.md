@@ -21,6 +21,8 @@ Parent DOX: [users DOX](../AGENTS.md).
 - `users.fullName` stores the shared profile's full name with an empty default.
 - Keep expiry cleanup indexed and preserve account auth-version/session
   identities.
+- Authentication sessions store shared type and transport fields with
+  username/remote defaults, covering cookies and allowances in one table.
 - Reuse the user fields from `../types/user.ts`; table-local keys and defaults
   remain explicit.
 

@@ -340,6 +340,8 @@ async function signIns(name: string): Promise<void> {
       (await accounts.listSessions(name)).authentication_sessions;
     model.data.sessions = sessions.map((session) => ({
       id: session.session_id,
+      type: session.type,
+      transport: session.transport,
       created: session.created_at,
       expires: session.expires_at,
       status: session.valid ? "Active" : "Ended",
@@ -356,7 +358,7 @@ async function signIns(name: string): Promise<void> {
           type: "list",
           bind: "sessions",
           key: "id",
-          display: ["created", "expires", "status"],
+          display: ["type", "transport", "created", "expires", "status"],
         },
       },
       header: {

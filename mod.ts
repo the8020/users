@@ -4,6 +4,7 @@ export {
   clearCookie,
   currentUser,
   eligibleUser,
+  issueAllowance,
   login,
   logout,
   requestToken,

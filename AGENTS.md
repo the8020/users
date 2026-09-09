@@ -204,6 +204,17 @@ below.
   and cookie header. JWT claims are iss/aud `the8020`, sub `user:<username>`,
   iat/exp in seconds, random 32-hex sid, and current account authVersion as ver.
   Deno checks the session's username/version/expiry and current account state.
+- Allowances reuse that same signature and 12-hour session policy. Rows record
+  type `username`/`token` and transport `local`/`remote`, with username/remote
+  defaults for password sign-ins. Signed transport must match its session row.
+  Both types appear in Sign-ins and use the same revoke/account-version checks.
+  `issueAllowance()` issues only for the current kernel execution username; the
+  native sandbox adapter invokes the ordinary authenticate program as its
+  verified owner. No password, per-feature scopes, or second token store exists.
+- Local allowances enter services only through native sandbox access or its
+  authenticated kernel-peer forwarding. Public HTTP rejects them, including
+  loopback HTTP and forged internal headers. Transport integrity belongs to the
+  kernel; account/session eligibility still runs in the target Worker.
 - Password defaults are Argon2id v19, 64 MiB, three rounds, one lane, random
   16-byte salt, and 32-byte output. Use pinned noble-hashes; no kernel password
   API or authentication settings remain. Unknown accounts still take the KDF

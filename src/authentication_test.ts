@@ -8,6 +8,8 @@ import {
 import { hashPassword, verifyPassword } from "./password.ts";
 import { fieldMetadata } from "/p/the8020/db/fields.ts";
 import { username } from "../types/user.ts";
+import { installContextProvider } from "../../kernel/defaults/config/runtime/deno/context/runtime.ts";
+import type { ExecutionContext } from "@the8020/context";
 
 const globals = globalThis as unknown as Record<symbol, unknown>;
 globals[kernelDatabaseBackendSymbol] = "sqlite";
@@ -36,7 +38,8 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL,
     fullName TEXT NOT NULL DEFAULT '');
     CREATE TABLE the8020__users__sessions (sessionId TEXT PRIMARY KEY, username TEXT NOT NULL,
-    authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, expiresAt TEXT NOT NULL);`);
+    authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, expiresAt TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'username', transport TEXT NOT NULL DEFAULT 'remote');`);
   const tokens = new Map<string, TokenClaims>();
   let databaseCalls = 0;
   globals[kernelInvokeSymbol] = (
@@ -175,6 +178,34 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     assertEquals((await users.validateSession(claims))?.username, "alice");
     await admin.revokeSession(String(claims.sid));
     assertEquals(await users.validateSession(claims), undefined);
+
+    const uninstallContext = installContextProvider(
+      () => ({ username: "alice" } as ExecutionContext),
+    );
+    try {
+      const allowance = await users.issueAllowance();
+      const tokenClaims = tokens.get(allowance.token)!;
+      assertEquals(tokenClaims.transport, "local");
+      assertEquals(
+        (await users.validateSession(tokenClaims))?.username,
+        "alice",
+      );
+      assertEquals(
+        await users.validateSession({ ...tokenClaims, transport: "remote" }),
+        undefined,
+      );
+      const signIn = (await admin.listSessions("alice")).authentication_sessions
+        .find((session) => session.session_id === tokenClaims.sid)!;
+      assertEquals([signIn.type, signIn.transport, signIn.valid], [
+        "token",
+        "local",
+        true,
+      ]);
+      await admin.revokeSession(String(tokenClaims.sid));
+      assertEquals(await users.validateSession(tokenClaims), undefined);
+    } finally {
+      uninstallContext();
+    }
 
     const second = await users.login(request, {
       username: "alice",

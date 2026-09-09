@@ -17,6 +17,9 @@ Parent DOX: [users DOX](../AGENTS.md).
   path for SSH/console authentication.
 - Account eligibility governs interactive login and stays independent from
   structural kernel execution principals.
+- Authenticate's `allowance` operation uses the calling execution owner and
+  issues a local users token. The native sandbox adapter supplies that owner; a
+  positional username never selects the allowance's identity.
 
 # Work Guidance
 

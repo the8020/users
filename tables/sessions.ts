@@ -4,6 +4,8 @@ import { accountInfo, authenticationSession, username } from "../types/user.ts";
 const Sessions = table("the8020__users__sessions", {
   sessionId: t.from(authenticationSession.shape.id).primaryKey(),
   username: t.from(username),
+  type: t.from(authenticationSession.shape.type).default("username"),
+  transport: t.from(authenticationSession.shape.transport).default("remote"),
   authVersion: t.from(accountInfo.shape.authVersion),
   createdAt: t.datetime().defaultNow(),
   expiresAt: t.datetime(),

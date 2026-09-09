@@ -24,6 +24,9 @@ Parent DOX: [users DOX](../AGENTS.md).
   and verification while this package validates account/session policy.
 - Login and logout own cookie construction and revocation; credentials never
   enter diagnostics.
+- Login and allowance issuance share `issueSession`; allowance ownership comes
+  from the trusted execution context. Validate signed transport against the
+  session row and include type/transport in the existing sign-in listing.
 
 # Work Guidance
 

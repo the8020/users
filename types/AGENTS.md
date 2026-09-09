@@ -15,6 +15,8 @@ Parent DOX: [users DOX](../AGENTS.md).
   for account status, password inputs, technical details, and sign-ins. Password
   controls remain screen-owned and start empty; creation usernames have no
   existing-account lookup or navigation.
+- `authenticationSession` also owns username/token type and local/remote access
+  fields, reused by session storage and Sign-ins.
 
 - Field imports perform no queries. Value help exposes username, full name, and
   enabled fields, with username first. The shared SQL lookup applies full list

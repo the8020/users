@@ -93,6 +93,15 @@ export const accountInfo = z.object({
 });
 
 export const authenticationSession = z.object({
+  type: field(z.enum(["username", "token"]), {
+    label: "Type",
+    description: "A username sign-in or an allowance token.",
+  }),
+  transport: field(z.enum(["local", "remote"]), {
+    label: "Access",
+    description:
+      "Local tokens work through native sandbox access only; remote tokens also work over HTTP.",
+  }),
   id: field(z.string(), {
     label: "Sign-in ID",
     description:

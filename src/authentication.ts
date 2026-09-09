@@ -100,6 +100,37 @@ export async function login(
 ): Promise<LoginResult> {
   const account = await passwordAccount(input.username, input.password);
   if (account === undefined) return { authenticated: false };
+  const session = await issueSession(account, "username", "remote");
+  return {
+    authenticated: true,
+    user: identity(account.username),
+    token: session.token,
+    setCookie: cookie(session.token, request, session.expires),
+  };
+}
+
+/** Native sandbox callers execute as their kernel-authenticated owner. */
+export async function issueAllowance(transport: "local" | "remote" = "local") {
+  if (transport !== "local" && transport !== "remote") {
+    throw new TypeError("Invalid token transport");
+  }
+  const account = await Users.selectAll().where(
+    Users.username,
+    "=",
+    context.username,
+  ).executeTakeFirst();
+  if (!account?.enabled || account.passwordHash === "") {
+    throw new Error("This account cannot sign in");
+  }
+  const session = await issueSession(account, "token", transport);
+  return { token: session.token, expiresAt: session.expires.toISOString() };
+}
+
+async function issueSession(
+  account: { username: string; authVersion: number },
+  type: "username" | "token",
+  transport: "local" | "remote",
+) {
   const now = Math.floor(Date.now() / 1000);
   const sessionId = crypto.getRandomValues(new Uint8Array(16)).toHex();
   const expires = new Date((now + sessionSeconds) * 1000);
@@ -111,6 +142,7 @@ export async function login(
     exp: now + sessionSeconds,
     sid: sessionId,
     ver: account.authVersion,
+    transport,
   });
   await Sessions.insert({
     sessionId,
@@ -118,13 +150,10 @@ export async function login(
     authVersion: account.authVersion,
     createdAt: new Date(now * 1000),
     expiresAt: expires,
+    type,
+    transport,
   }).execute();
-  return {
-    authenticated: true,
-    user: identity(account.username),
-    token,
-    setCookie: cookie(token, request, expires),
-  };
+  return { token, expires };
 }
 
 // This accepts only claims already verified by the kernel, including explicit
@@ -146,7 +175,8 @@ export async function validateSession(
   ).executeTakeFirst();
   if (
     session === undefined || session.username !== username ||
-    session.authVersion !== claims.ver || session.expiresAt <= new Date()
+    session.authVersion !== claims.ver || session.expiresAt <= new Date() ||
+    session.transport !== (claims.transport ?? "remote")
   ) return undefined;
   const account = await Users.selectAll().where(Users.username, "=", username)
     .executeTakeFirst();

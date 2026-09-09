@@ -240,6 +240,8 @@ export async function listSessions(username?: string) {
     Sessions.select([
       Sessions.sessionId,
       Sessions.username,
+      Sessions.type,
+      Sessions.transport,
       Sessions.authVersion,
       Sessions.createdAt,
       Sessions.expiresAt,
@@ -264,6 +266,8 @@ export async function listSessions(username?: string) {
       const account = accounts.get(record.username);
       return {
         session_id: record.sessionId,
+        type: record.type,
+        transport: record.transport,
         username: record.username,
         created_at: record.createdAt.toISOString(),
         expires_at: record.expiresAt.toISOString(),

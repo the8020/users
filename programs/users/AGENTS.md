@@ -28,6 +28,8 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
   supported; removing a password, disabling, and deleting require confirmation.
 - Read sign-ins with the username filter at the query boundary. Open sessions
   calls the owning UUI program with that username.
+- Sign-ins show username/token type and local/remote access; revocation is
+  shared by both kinds of authentication.
 
 # Work Guidance
 
