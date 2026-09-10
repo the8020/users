@@ -17,6 +17,8 @@ Parent DOX: [users DOX](../AGENTS.md).
   existing-account lookup or navigation.
 - `authenticationSession` also owns username/token type and local/remote access
   fields, reused by session storage and Sign-ins.
+- Account sign-in status and Active/Ended authentication-session status expose
+  their known choices. Type/transport enums keep their inferred value help.
 
 - Field imports perform no queries. Value help exposes username, full name, and
   enabled fields, with username first. The shared SQL lookup applies full list

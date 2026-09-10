@@ -1,4 +1,4 @@
-import { field, z } from "/p/the8020/db/fields.ts";
+import { choiceHelp, field, z } from "/p/the8020/db/fields.ts";
 
 export const username: z.ZodString = field(z.string(), {
   label: "User",
@@ -56,6 +56,7 @@ export const accountInfo = z.object({
     label: "Sign-in",
     description:
       "Sign-in is allowed only when the account is enabled and has a password.",
+    valueHelp: choiceHelp(z.string(), ["Allowed", "Disabled", "No password"]),
   }),
   activeSessions: field(z.number().int().nonnegative(), {
     label: "Active sign-ins",
@@ -120,5 +121,6 @@ export const authenticationSession = z.object({
     label: "Status",
     description:
       "Active sign-ins can authenticate requests. Ended sign-ins are expired, revoked, or invalidated by account changes.",
+    valueHelp: choiceHelp(z.string(), ["Active", "Ended"]),
   }),
 });
