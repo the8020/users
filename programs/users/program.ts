@@ -134,12 +134,17 @@ export async function userDetail(
         root: {
           type: "detail",
           controls: ["username", "fullName", "signIn", "activeSessions"],
-          actions: ["sign-ins", "ui-sessions"],
+          actions: [
+            "sign-ins",
+            "ui-sessions",
+            ...(!selfService ? ["roles"] : []),
+          ],
         },
       },
       actions: [
         { id: "sign-ins", label: "Sign-ins" },
         { id: "ui-sessions", label: "Open sessions" },
+        ...(!selfService ? [{ id: "roles", label: "Roles" }] : []),
       ],
       header: {
         actions: [
@@ -183,6 +188,12 @@ export async function userDetail(
         }
       }
       if (event.action === "sign-ins") await presentPage(() => signIns(name));
+      if (!selfService && event.action === "roles") {
+        const { default: roles } = await import(
+          "/p/the8020/auth/programs/user-roles/program.ts"
+        );
+        await presentPage(() => roles(name));
+      }
       if (event.action === "ui-sessions") {
         const { default: sessions } = await import(
           "/p/the8020/uui/programs/sessions/program.ts"

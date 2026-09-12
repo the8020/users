@@ -11,6 +11,14 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 # Local Contracts
 
+- Account mutations enforce the declared `users.user.*` actions before writes or
+  password hashing. Own profile/password replacement and sign-in revocation
+  remain self-service. Creating accounts leaves roles absent.
+- `remove` deletes only users-owned account and sign-in records, then emits
+  `users.deleted` with `{ username }` after commit. Other packages own cleanup
+  through their event subscriptions; never call their cleanup here. An emission
+  error reports the committed deletion explicitly.
+
 - Use salted Argon2id PHC hashes and bounded constant-query account/session
   listings without loading hashes for summaries.
 - `admin.user(username)` supplies one non-secret account summary to both

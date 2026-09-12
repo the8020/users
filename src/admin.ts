@@ -1,12 +1,14 @@
 import { db, type Selectable, sql } from "/p/the8020/db/mod.ts";
 import type { Database } from "/p/the8020/db/types.ts";
-import { AdminCommandError } from "@the8020/kernel";
+import { AdminCommandError, kernel } from "@the8020/kernel";
 import { hashPassword } from "./password.ts";
 import type { Kysely, Transaction } from "kysely";
 import Sessions from "../tables/sessions.ts";
 import Users, { type UserRow } from "../tables/users.ts";
 import { userProfile } from "../types/user.ts";
 import type { z } from "/p/the8020/db/fields.ts";
+import { context } from "@the8020/context";
+import { requirePermission } from "/p/the8020/auth/mod.ts";
 
 type User = Selectable<UserRow>;
 type PublicUser = Omit<User, "passwordHash"> & { passwordSet: number };
@@ -70,6 +72,7 @@ export async function user(username: string, database: Queryable = db) {
 
 export async function add(username: string, password = "", fullName = "") {
   validateUsername(username);
+  await requirePermission("users.user.create", username);
   const profile = userProfile.parse({ fullName });
   const passwordHash = password === "" ? "" : await hashPassword(password);
   const now = new Date();
@@ -128,7 +131,8 @@ export async function list() {
 
 export async function remove(username: string) {
   validateUsername(username);
-  return await db.transaction().execute(async (transaction) => {
+  await requirePermission("users.user.delete", username);
+  const result = await db.transaction().execute(async (transaction) => {
     const removed = await transaction.deleteFrom(Users.table)
       .where(Users.username, "=", username)
       .executeTakeFirst();
@@ -143,6 +147,16 @@ export async function remove(username: string) {
       .execute();
     return { removed: true };
   });
+  try {
+    await kernel.events.emit("users.deleted", { username });
+  } catch (error) {
+    throw new AdminCommandError({
+      code: "runtime_operation",
+      message:
+        `User ${username} was deleted; event publication failed: ${error}`,
+    });
+  }
+  return result;
 }
 
 async function update(
@@ -167,10 +181,13 @@ async function update(
   });
 }
 
-export function updateDetails(
+export async function updateDetails(
   username: string,
   details: z.infer<typeof userProfile>,
 ) {
+  if (!context.authenticated || context.username !== username) {
+    await requirePermission("users.user.edit", username);
+  }
   const profile = userProfile.parse(details);
   return update(username, false, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
@@ -181,7 +198,8 @@ export function updateDetails(
   });
 }
 
-export function enable(username: string) {
+export async function enable(username: string) {
+  await requirePermission("users.user.edit", username);
   return update(username, false, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({ enabled: true, updatedAt: new Date() })
@@ -191,7 +209,8 @@ export function enable(username: string) {
   });
 }
 
-export function disable(username: string) {
+export async function disable(username: string) {
+  await requirePermission("users.user.edit", username);
   return update(username, true, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({
@@ -208,6 +227,11 @@ export function disable(username: string) {
 }
 
 export async function setPassword(username: string, password: string) {
+  if (
+    !context.authenticated || context.username !== username || password === ""
+  ) {
+    await requirePermission("users.user.password", username);
+  }
   const passwordHash = password === "" ? "" : await hashPassword(password);
   return await update(username, true, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
@@ -222,7 +246,10 @@ export async function setPassword(username: string, password: string) {
   });
 }
 
-export function invalidateSessions(username: string) {
+export async function invalidateSessions(username: string) {
+  if (!context.authenticated || context.username !== username) {
+    await requirePermission("users.user.sessions", username);
+  }
   return update(username, true, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({
@@ -286,12 +313,25 @@ export async function revokeSession(sessionId: string) {
       message: "session ID must be 32 lowercase hexadecimal characters",
     });
   }
+  const session = await Sessions.select([Sessions.username]).where(
+    Sessions.sessionId,
+    "=",
+    sessionId,
+  ).executeTakeFirst();
+  if (
+    session && (!context.authenticated || context.username !== session.username)
+  ) {
+    await requirePermission("users.user.sessions", session.username);
+  }
   await Sessions.delete().where(Sessions.sessionId, "=", sessionId).execute();
   return { revoked: true };
 }
 
 export async function revokeUserSessions(username: string) {
   validateUsername(username);
+  if (!context.authenticated || context.username !== username) {
+    await requirePermission("users.user.sessions", username);
+  }
   const result = await Sessions.delete().where(
     Sessions.username,
     "=",

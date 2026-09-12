@@ -1,0 +1,5 @@
+"users.user.create" = "Create an account; value is username."
+"users.user.delete" = "Delete an account and its authentication sessions, then publish users.deleted; value is username."
+"users.user.edit" = "Change account details or enablement; value is username. Authenticated users may edit their own profile."
+"users.user.password" = "Replace or remove a password; value is username. Authenticated users may replace their own password."
+"users.user.sessions" = "End authentication sign-ins; value is username. Users may end their own sign-ins."

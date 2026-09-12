@@ -147,6 +147,20 @@ below.
 
 # Local Contracts
 
+- Account mutations enforce `users.user.*` permissions in `src/admin.ts`.
+  Authenticated users may edit their own profile, replace their own password,
+  and revoke their own sign-ins. Enablement, deletion, and password removal
+  require explicit authority; system execution bypasses checks in auth.
+- Creating an account does not create a role. Deletion removes only this
+  package's account and authentication-session records. After commit, publish
+  `users.deleted` with `{ username }`; other packages subscribe and clean up
+  their own data. Never import or call another package's cleanup here.
+  `declarations/events.toml` documents the event for subscribers. Event
+  publication failure reports that deletion already committed.
+- User detail links to `the8020/auth/user-roles`; auth owns role management and
+  bidirectional navigation. `declarations/auth.toml` documents this package's
+  permission keys without enforcing a registry.
+
 - Passwords are stored only as Argon2id PHC hashes with random salts. Signed
   JWTs contain an opaque session ID; no session secret/hash or token is stored
   in the sessions table. Credentials never enter diagnostics.
@@ -156,10 +170,10 @@ below.
   counts require a current auth version, enabled user, and future expiry.
 - Listing and summary queries never load password hashes into the program
   Worker.
-- Users are ordinary peers until a future permissions package defines roles.
-  Package programs own user/session transactions and obtain command passwords
-  only from execution-scoped secure input. There are no kernel recovery-user
-  commands or bootstrap-administrator identity.
+- `the8020/auth` owns application authorization roles and checks. Package
+  programs own user/session transactions and obtain command passwords only from
+  execution-scoped secure input. There are no kernel recovery-user commands or
+  bootstrap-administrator identity.
 - Password presence alone controls login: an empty password hash means no login,
   including SSH key login. Creating a user without a password is supported;
   setting an empty password removes login and invalidates existing sessions.
@@ -247,3 +261,5 @@ below.
   programs.
 - `deno task test` verifies schemas, password behavior, SQLite-backed login,
   session revocation/disablement, header precedence, and stale-cookie removal.
+  It also verifies account/session deletion and event emission with no other
+  package's tables present.

@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "@std/assert";
 import { DatabaseSync } from "node:sqlite";
 import {
   kernelDatabaseBackendSymbol,
@@ -33,6 +33,10 @@ Deno.test("password hashing remains Argon2id with independent salts", async () =
 
 Deno.test("users own login, session eligibility, revocation, and stale-cookie logout", async () => {
   const database = new DatabaseSync(":memory:");
+  let testUsername = "system";
+  const restoreContext = installContextProvider(
+    () => ({ username: testUsername, authenticated: true } as ExecutionContext),
+  );
   database.exec(`CREATE TABLE the8020__users__users (
     username TEXT PRIMARY KEY, passwordHash TEXT NOT NULL, enabled INTEGER NOT NULL,
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL,
@@ -41,6 +45,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, expiresAt TEXT NOT NULL,
     type TEXT NOT NULL DEFAULT 'username', transport TEXT NOT NULL DEFAULT 'remote');`);
   const tokens = new Map<string, TokenClaims>();
+  const deletedUsers: unknown[] = [];
   let databaseCalls = 0;
   globals[kernelInvokeSymbol] = (
     operation: string,
@@ -48,6 +53,28 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
   ) => {
     if (operation === "runtime.operation") {
       const data = input.input as Record<string, unknown>;
+      if (input.operation === "event.emit") {
+        assertEquals(data.name, "users.deleted");
+        assertEquals(
+          database.prepare(
+            "SELECT username FROM the8020__users__users WHERE username = ?",
+          )
+            .all("alice"),
+          [],
+        );
+        assertEquals(
+          database.prepare(
+            "SELECT username FROM the8020__users__sessions WHERE username = ?",
+          )
+            .all("alice"),
+          [],
+        );
+        deletedUsers.push(data.data);
+        return Promise.resolve({
+          success: true,
+          result: { id: "event", listeners: 0 },
+        });
+      }
       if (input.operation === "crypto.token.sign") {
         const token = `test-token-${tokens.size}`;
         tokens.set(token, structuredClone(data.claims as TokenClaims));
@@ -154,7 +181,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
         ?.full_name,
       "Alice Updated",
     );
-    assertThrows(() =>
+    await assertRejects(() =>
       admin.updateDetails("alice", { fullName: "x".repeat(201) })
     );
     await assertRejects(() =>
@@ -179,9 +206,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     await admin.revokeSession(String(claims.sid));
     assertEquals(await users.validateSession(claims), undefined);
 
-    const uninstallContext = installContextProvider(
-      () => ({ username: "alice" } as ExecutionContext),
-    );
+    testUsername = "alice";
     try {
       const allowance = await users.issueAllowance();
       const tokenClaims = tokens.get(allowance.token)!;
@@ -204,7 +229,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       await admin.revokeSession(String(tokenClaims.sid));
       assertEquals(await users.validateSession(tokenClaims), undefined);
     } finally {
-      uninstallContext();
+      testUsername = "system";
     }
 
     const second = await users.login(request, {
@@ -285,6 +310,19 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
         ),
       );
     }
+    // No auth tables exist in this fixture: deletion must remain users-owned.
+    await users.login(request, {
+      username: "alice",
+      password: "updated password",
+    });
+    assertEquals(
+      (await admin.listSessions("alice")).authentication_sessions.length,
+      1,
+    );
+    await admin.remove("alice");
+    assertEquals(deletedUsers, [{ username: "alice" }]);
+    await assertRejects(() => admin.remove("alice"));
+    assertEquals(deletedUsers.length, 1);
     database.exec("DROP TABLE the8020__users__sessions");
     const failedLogout = await users.logout(validRequest);
     assertEquals(failedLogout.status, 503);
@@ -308,6 +346,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       "header",
     );
   } finally {
+    restoreContext();
     delete globals[kernelInvokeSymbol];
     database.close();
   }

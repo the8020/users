@@ -12,6 +12,10 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 
 # Local Contracts
 
+- Administrative user detail exposes Roles and opens `the8020/auth/user-roles`
+  with the selected username. The auth package owns personal-role creation,
+  assignment editing, role details, and navigation back to users.
+
 - Account, password, and sign-in fields reuse `types/user.ts` labels and help;
   only presentation hints belong in the screen.
 

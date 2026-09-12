@@ -1,0 +1,1 @@
+"users.deleted" = "An account and its authentication sessions were deleted. Other packages subscribe to delete their own data belonging to that user. Listener input is the ordinary event envelope; data is { username: string }. Published after the users-package transaction commits, as the deleting user. Delivery uses the ordinary asynchronous event dispatcher."
