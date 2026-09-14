@@ -28,8 +28,15 @@ Parent DOX: [users DOX](../AGENTS.md).
   profile schema and updates details/timestamp without changing authentication
   version or sessions. Both administration and self-service reuse `setPassword`
   for hashing and session invalidation.
-- Authenticate within the existing target Worker; the kernel owns JWT signing
-  and verification while this package validates account/session policy.
+- Token account/session policy runs in the existing target Worker; the kernel
+  owns JWT signing and verification. Native password transports, including HTTP
+  Basic for all authenticated services, reuse `authenticatePassword` through the
+  existing authenticate program. Basic does not create a session.
+- This package alone validates session representation: `sid` is 32 lowercase hex
+  characters and `ver` is a positive safe integer, checked before database
+  access. The kernel treats session fields as opaque, while retaining signed
+  principal, time, and transport validation. Tokens use the master's derived
+  `app-session-cookie` key through the existing token API.
 - Login and logout own cookie construction and revocation; credentials never
   enter diagnostics.
 - Login and allowance issuance share `issueSession`; allowance ownership comes

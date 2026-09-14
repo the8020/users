@@ -2,7 +2,7 @@ import { db, type Selectable, sql } from "/p/the8020/db/mod.ts";
 import type { Database } from "/p/the8020/db/types.ts";
 import { AdminCommandError, kernel } from "@the8020/kernel";
 import { hashPassword } from "./password.ts";
-import type { Kysely, Transaction } from "kysely";
+import type { Kysely, Transaction } from "/p/the8020/db/kysely.ts";
 import Sessions from "../tables/sessions.ts";
 import Users, { type UserRow } from "../tables/users.ts";
 import { userProfile } from "../types/user.ts";

@@ -1,4 +1,5 @@
-import { kernel, requiredCommandArgument } from "@the8020/kernel";
+import { kernel } from "@the8020/kernel";
+import { requiredCommandArgument } from "/p/the8020/packages/commands.ts";
 import { add } from "../../src/admin.ts";
 
 export default function addUser(...args: string[]) {

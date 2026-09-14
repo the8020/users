@@ -165,6 +165,26 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     assert(result.setCookie.includes("Path=/; HttpOnly; SameSite=Lax"));
     assert(result.setCookie.includes("; Secure"));
     const claims = tokens.get(result.token)!;
+    const beforeInvalidClaims = databaseCalls;
+    for (
+      const sid of [undefined, null, "", "x".repeat(129), 12, { new: "format" }]
+    ) {
+      assertEquals(await users.validateSession({ ...claims, sid }), undefined);
+    }
+    for (
+      const ver of [
+        undefined,
+        null,
+        "1",
+        0,
+        -1,
+        1.5,
+        Number.MAX_SAFE_INTEGER + 1,
+      ]
+    ) {
+      assertEquals(await users.validateSession({ ...claims, ver }), undefined);
+    }
+    assertEquals(databaseCalls, beforeInvalidClaims);
     const account = await admin.user("alice");
     assertEquals(account.full_name, "Alice Example");
     assertEquals(account.active_authentication_session_count, 1);

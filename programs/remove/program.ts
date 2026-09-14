@@ -1,4 +1,4 @@
-import { requiredCommandArgument } from "@the8020/kernel";
+import { requiredCommandArgument } from "/p/the8020/packages/commands.ts";
 import { remove } from "../../src/admin.ts";
 
 export default function removeUser(...args: string[]) {

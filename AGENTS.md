@@ -239,13 +239,21 @@ below.
   with cookie removal. Setting and clearing use Path=/, HttpOnly, SameSite=Lax,
   and Secure for HTTPS. Stale cookies do not block public login, which replaces
   them on success.
-- Native SSH and console adapters use `programs/authenticate` through ordinary
-  jobs with normal mounts and secure inputs. There is no extra authentication
-  service, isolation, or execution mechanism. Minute expiry cleanup uses
+- Native SSH, console, and shared HTTP Basic admission use
+  `programs/authenticate` through ordinary jobs with normal mounts and secure
+  inputs. Basic checks the enabled account and password on every request and
+  creates no authentication session. There is no extra authentication service,
+  isolation, or execution mechanism. Minute expiry cleanup uses
   `events/cleanup-sessions.toml` with `event = "minute"` to invoke the existing
   sessions-cleanup program.
 
 # Work Guidance
+
+- Build only what the request and established contracts require. Before adding a
+  mechanism, identify that need and why existing owners or standard tools cannot
+  meet it. Do not invent stronger guarantees for hypothetical cases. Remove
+  unsupported additions at closeout; agent-written tests and DOX do not
+  authorize them. Preserve required correctness, security, and data integrity.
 
 - Keep account and authentication policy in this Deno package and use the
   ordinary Worker and typed cryptographic bridge. Do not move login rules into
