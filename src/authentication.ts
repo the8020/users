@@ -3,9 +3,12 @@ import { context } from "@the8020/context";
 import Users from "../tables/users.ts";
 import Sessions from "../tables/sessions.ts";
 import { verifyPassword } from "./password.ts";
+import { getSystemProfile } from "/p/the8020/system/profile.ts";
 
 export const tokenHeader = "the8020-authorization";
-export const tokenCookie = "the8020_auth";
+export async function authenticationCookie(): Promise<string> {
+  return `the8020_auth_${(await getSystemProfile()).id}`;
+}
 const sessionSeconds = 12 * 60 * 60;
 
 export interface User {
@@ -36,11 +39,12 @@ export function currentUser(): User | undefined {
   return context.authenticated ? identity(context.username) : undefined;
 }
 
-export function requestToken(request: Request): string {
+export async function requestToken(request: Request): Promise<string> {
   const header = request.headers.get(tokenHeader);
   if (header !== null) {
     return /^Bearer\s+(\S+)$/i.exec(header.trim())?.[1] ?? "";
   }
+  const tokenCookie = await authenticationCookie();
   const cookies = (request.headers.get("cookie") ?? "").split(";")
     .map((part) => part.trim()).filter((part) =>
       part.startsWith(`${tokenCookie}=`)
@@ -48,7 +52,12 @@ export function requestToken(request: Request): string {
   return cookies.length === 1 ? cookies[0]!.slice(tokenCookie.length + 1) : "";
 }
 
-function cookie(token: string, request: Request, expires: Date): string {
+async function cookie(
+  token: string,
+  request: Request,
+  expires: Date,
+): Promise<string> {
+  const tokenCookie = await authenticationCookie();
   return `${tokenCookie}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${
     token === "" ? 0 : sessionSeconds
   }; Expires=${expires.toUTCString()}${
@@ -56,7 +65,7 @@ function cookie(token: string, request: Request, expires: Date): string {
   }`;
 }
 
-export function clearCookie(request: Request): string {
+export function clearCookie(request: Request): Promise<string> {
   return cookie("", request, new Date(0));
 }
 
@@ -105,7 +114,7 @@ export async function login(
     authenticated: true,
     user: identity(account.username),
     token: session.token,
-    setCookie: cookie(session.token, request, session.expires),
+    setCookie: await cookie(session.token, request, session.expires),
   };
 }
 
@@ -197,7 +206,7 @@ export async function authenticate(
   if (await validateSession(claims) !== undefined) return undefined;
   const headers = new Headers({ "cache-control": "no-store" });
   if (!request.headers.has(tokenHeader) && request.headers.has("cookie")) {
-    headers.set("set-cookie", clearCookie(request));
+    headers.set("set-cookie", await clearCookie(request));
   }
   if (policy.action === "redirect") {
     headers.set("location", policy.redirect_url!);
@@ -212,11 +221,13 @@ export async function authenticate(
 
 export async function logout(request: Request): Promise<Response> {
   const headers = new Headers({
-    "set-cookie": clearCookie(request),
+    "set-cookie": await clearCookie(request),
     "cache-control": "no-store",
   });
   try {
-    const claims = await kernel.crypto.token.verify(requestToken(request));
+    const claims = await kernel.crypto.token.verify(
+      await requestToken(request),
+    );
     if (
       claims !== null && typeof claims.sid === "string" &&
       typeof claims.sub === "string"

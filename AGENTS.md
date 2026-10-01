@@ -213,7 +213,11 @@ below.
   services never run it automatically and retain their configured execution
   user.
 - Platform credentials use the lowercase `the8020-authorization` header and
-  `the8020_auth` cookie. HTTP header selection remains case-insensitive.
+  `the8020_auth_<system ID>` cookie. `authenticationCookie()` obtains the stable
+  database-owned `sys-` ID through the system package. Login, token selection,
+  rejection, and logout use only that system's cookie. Services publishes the
+  same name to the native index for HTTP and console admission. HTTP header
+  selection remains case-insensitive.
 - Login creates a 12-hour session, then returns the kernel-signed platform JWT
   and cookie header. JWT claims are iss/aud `the8020`, sub `user:<username>`,
   iat/exp in seconds, random 32-hex sid, and current account authVersion as ver.

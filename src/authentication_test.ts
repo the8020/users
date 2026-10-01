@@ -41,6 +41,8 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     username TEXT PRIMARY KEY, passwordHash TEXT NOT NULL, enabled INTEGER NOT NULL,
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL,
     fullName TEXT NOT NULL DEFAULT '');
+    CREATE TABLE the8020__system__settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, definitionHash TEXT NOT NULL, updatedAt TEXT NOT NULL);
+    INSERT INTO the8020__system__settings VALUES ('system.profile', '{"id":"sys-aaaaaaaaaa","name":"Development","role":"development"}', 'the8020/system', '2026-01-01T00:00:00Z');
     CREATE TABLE the8020__users__sessions (sessionId TEXT PRIMARY KEY, username TEXT NOT NULL,
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, expiresAt TEXT NOT NULL,
     type TEXT NOT NULL DEFAULT 'username', transport TEXT NOT NULL DEFAULT 'remote');`);
@@ -122,7 +124,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     });
   };
   const request = new Request("https://example.test/login", {
-    headers: { cookie: "the8020_auth=stale" },
+    headers: { cookie: "the8020_auth_sys-aaaaaaaaaa=stale" },
   });
   try {
     await admin.add("alice", "correct horse", " Alice Example ");
@@ -164,6 +166,27 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     );
     assert(result.setCookie.includes("Path=/; HttpOnly; SameSite=Lax"));
     assert(result.setCookie.includes("; Secure"));
+    assert(result.setCookie.startsWith("the8020_auth_sys-aaaaaaaaaa="));
+    assertEquals(
+      await users.requestToken(
+        new Request(request.url, {
+          headers: {
+            cookie:
+              `the8020_auth_sys-bbbbbbbbbb=other; the8020_auth_sys-aaaaaaaaaa=${result.token}`,
+          },
+        }),
+      ),
+      result.token,
+    );
+    const foreign = new Request(request.url, {
+      headers: { cookie: "the8020_auth_sys-bbbbbbbbbb=other" },
+    });
+    assertEquals(await users.requestToken(foreign), "");
+    assert(
+      (await users.clearCookie(foreign)).startsWith(
+        "the8020_auth_sys-aaaaaaaaaa=;",
+      ),
+    );
     const claims = tokens.get(result.token)!;
     const beforeInvalidClaims = databaseCalls;
     for (
@@ -305,7 +328,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       password: "updated password",
     });
     const validRequest = new Request(request.url, {
-      headers: { cookie: `the8020_auth=${third.token}` },
+      headers: { cookie: `the8020_auth_sys-aaaaaaaaaa=${third.token}` },
     });
     const logout = await users.logout(validRequest);
     assertEquals(logout.status, 204);
@@ -318,11 +341,11 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       const before = databaseCalls;
       const response = await users.logout(
         new Request(request.url, {
-          headers: { cookie: `the8020_auth=${token}` },
+          headers: { cookie: `the8020_auth_sys-aaaaaaaaaa=${token}` },
         }),
       );
       assertEquals(response.status, 204);
-      assertEquals(databaseCalls, before);
+      assertEquals(databaseCalls, before + 2);
       assert(response.headers.get("set-cookie")!.includes("Max-Age=0"));
       assert(
         response.headers.get("set-cookie")!.includes(
@@ -350,16 +373,16 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     const explicit = new Request(request.url, {
       headers: {
         "the8020-authorization": "bad",
-        cookie: `the8020_auth=${third.token}`,
+        cookie: `the8020_auth_sys-aaaaaaaaaa=${third.token}`,
       },
     });
-    assertEquals(users.requestToken(explicit), "");
+    assertEquals(await users.requestToken(explicit), "");
     assertEquals(
-      users.requestToken(
+      await users.requestToken(
         new Request(request.url, {
           headers: {
             "the8020-authorization": "Bearer header",
-            cookie: "the8020_auth=cookie",
+            cookie: "the8020_auth_sys-aaaaaaaaaa=cookie",
           },
         }),
       ),

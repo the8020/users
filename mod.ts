@@ -1,6 +1,7 @@
 export {
   authenticate,
   authenticatePassword,
+  authenticationCookie,
   clearCookie,
   currentUser,
   eligibleUser,
