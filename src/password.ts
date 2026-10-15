@@ -1,6 +1,5 @@
-// Package dependencies use qualified imports under the shared runtime import map.
-// deno-lint-ignore no-import-prefix
-import { argon2idAsync } from "npm:@noble/hashes@2.4.0/argon2.js";
+// @deno-types="../vendor/argon2.ts"
+import { argon2idAsync } from "../vendor/argon2.js";
 import { timingSafeEqual } from "node:crypto";
 
 const parameters = { m: 65536, t: 3, p: 1, dkLen: 32 };
