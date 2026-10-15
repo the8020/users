@@ -127,6 +127,8 @@ below.
   sessions.
 - [types/AGENTS.md](types/AGENTS.md): Define reusable user fields, structures,
   and paged value help for database and UUI consumers.
+- [vendor/AGENTS.md](vendor/AGENTS.md): Pin and bundle noble-hashes Argon2 with
+  original types and its license.
 
 # Purpose
 
@@ -237,6 +239,10 @@ below.
   16-byte salt, and 32-byte output. Use pinned noble-hashes; no kernel password
   API or authentication settings remain. Unknown accounts still take the KDF
   path.
+- `vendor/` owns the Argon2 pin, committed external bundle, and original types
+  consumed by `src/password.ts`. `deno task bundle` regenerates this dependency
+  before publication; password policy and application modules remain ordinary
+  source.
 - Explicit public logout verifies presented credentials through the kernel
   bridge when needed, revokes their session when valid, and always clears the
   cookie for absent/invalid/expired tokens. Revocation failure returns an error
