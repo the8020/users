@@ -2,6 +2,8 @@ import { kernel, type TokenClaims } from "@the8020/kernel";
 import { context } from "@the8020/context";
 import Users from "../tables/users.ts";
 import Sessions from "../tables/sessions.ts";
+import Certificates from "../tables/certificates.ts";
+import { certificate } from "../types/certificate.ts";
 import { verifyPassword } from "./password.ts";
 import { getSystemProfile } from "/p/the8020/system/profile.ts";
 
@@ -84,6 +86,24 @@ export async function eligibleUser(
   return account?.enabled && account.passwordHash !== ""
     ? identity(username)
     : undefined;
+}
+
+/** Native admission has already established possession of this certificate's key. */
+export async function authenticateCertificate(
+  fingerprint: string,
+): Promise<User | undefined> {
+  if (!certificate.shape.fingerprint.safeParse(fingerprint).success) {
+    return undefined;
+  }
+  const now = new Date();
+  const account = await Certificates.select([Certificates.username])
+    .innerJoin(Users.table, Users.username, Certificates.username)
+    .where(Certificates.fingerprint, "=", fingerprint)
+    .where(Certificates.validFrom, "<=", now)
+    .where(Certificates.expiresAt, ">", now)
+    .where(Users.enabled, "=", true).executeTakeFirst();
+  // Certificate-only accounts need no password. Password/token/SSH policy is unchanged.
+  return account ? identity(account.username) : undefined;
 }
 
 async function passwordAccount(username: string, password: string) {

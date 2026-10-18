@@ -4,6 +4,7 @@ import { AdminCommandError, kernel } from "@the8020/kernel";
 import { hashPassword } from "./password.ts";
 import type { Kysely, Transaction } from "/p/the8020/db/kysely.ts";
 import Sessions from "../tables/sessions.ts";
+import Certificates from "../tables/certificates.ts";
 import Users, { type UserRow } from "../tables/users.ts";
 import { userProfile } from "../types/user.ts";
 import type { z } from "/p/the8020/db/fields.ts";
@@ -133,6 +134,11 @@ export async function remove(username: string) {
   validateUsername(username);
   await requirePermission("users.user.delete", username);
   const result = await db.transaction().execute(async (transaction) => {
+    await transaction.updateTable(Users.table)
+      .set({ updatedAt: new Date() })
+      .where(Users.username, "=", username).execute();
+    await transaction.deleteFrom(Certificates.table)
+      .where(Certificates.username, "=", username).execute();
     const removed = await transaction.deleteFrom(Users.table)
       .where(Users.username, "=", username)
       .executeTakeFirst();

@@ -1,5 +1,6 @@
 import { kernel } from "@the8020/kernel";
 import {
+  authenticateCertificate,
   authenticatePassword,
   eligibleUser,
   issueAllowance,
@@ -8,6 +9,8 @@ import {
 
 export default async function authenticate(mode: string, username: string) {
   switch (mode) {
+    case "certificate":
+      return (await authenticateCertificate(username))?.username ?? null;
     case "allowance":
       return await issueAllowance();
     case "password":

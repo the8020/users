@@ -20,6 +20,9 @@ Parent DOX: [users DOX](../AGENTS.md).
 - Authenticate's `allowance` operation uses the calling execution owner and
   issues a local users token. The native sandbox adapter supplies that owner; a
   positional username never selects the allowance's identity.
+- Authenticate's `certificate` operation takes a native-verified fingerprint and
+  returns the eligible username or null. Unlike password/user modes, the
+  identity comes from enrollment; callers cannot select its account.
 
 # Work Guidance
 
@@ -30,6 +33,7 @@ Parent DOX: [users DOX](../AGENTS.md).
 # Child DOX Index
 
 - [users/AGENTS.md](users/AGENTS.md): Provide the account catalog, linked user
-  detail, passwords, sign-ins, and advanced account actions.
+  detail, passwords, enrolled certificates, sign-ins, and advanced account
+  actions.
 - [my-account/AGENTS.md](my-account/AGENTS.md): Open the authenticated user's
-  profile and password forms from the UUI quick menu.
+  profile, password, and certificate forms from the UUI quick menu.

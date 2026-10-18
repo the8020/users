@@ -2,12 +2,14 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 
 # Purpose
 
-- Let signed-in users view and edit their own account details and password.
+- Let signed-in users view and edit their own account details, password, and
+  enrolled public certificates.
 
 # Ownership
 
 - Own the hidden My account program; the Users program owns shared forms and
-  `../../src/admin.ts` owns profile and password mutations.
+  `../../src/admin.ts` owns profile and password mutations. Certificate
+  enrollment and removal belong to `../../src/certificates.ts`.
 
 # Local Contracts
 

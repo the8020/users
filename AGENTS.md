@@ -104,9 +104,9 @@ Default section order:
 When the user requests a durable behavior change, record it here or in the
 relevant child AGENTS.md
 
-- User administration and My account share profile/password forms and call
-  users-owned operations directly. UUI may call the My account program directly
-  from its quick menu; no hooks or command-bus roundtrip are needed.
+- User administration and My account share profile/password/certificate forms
+  and call users-owned operations directly. UUI may call the My account program
+  directly from its quick menu; no hooks or command-bus roundtrip are needed.
 
 ## Child DOX Index
 
@@ -123,10 +123,12 @@ below.
   authentication, and session administration entrypoints.
 - [src/AGENTS.md](src/AGENTS.md): Own account operations, password hashing, and
   authentication-session policy.
-- [tables/AGENTS.md](tables/AGENTS.md): Describe users and authentication
-  sessions.
+- [tables/AGENTS.md](tables/AGENTS.md): Describe users, authentication sessions,
+  and enrolled client certificates.
 - [types/AGENTS.md](types/AGENTS.md): Define reusable user fields, structures,
   and paged value help for database and UUI consumers.
+- [vendor/AGENTS.md](vendor/AGENTS.md): Pin and bundle Argon2 and X.509 parsing
+  with original types and upstream licenses.
 
 # Purpose
 
@@ -138,8 +140,9 @@ below.
 
 - Own authored schemas, administrative command programs, user mutations, and
   authentication sessions and token claims. The Users UUI program owns account
-  lists and details, full-name and password editing, and sign-in administration.
-  My account reuses these forms for the authenticated user's own details.
+  lists and details, full-name and password editing, enrolled certificates, and
+  sign-in administration. My account reuses these forms for the authenticated
+  user's own details.
 - Own account/password rules, Argon2id hashing and verification, login/logout,
   session issuance/validation/revocation, and application cookie construction.
   Do not own UUI application sessions, private signing keys, kernel principals,
@@ -152,10 +155,10 @@ below.
   and revoke their own sign-ins. Enablement, deletion, and password removal
   require explicit authority; system execution bypasses checks in auth.
 - Creating an account does not create a role. Deletion removes only this
-  package's account and authentication-session records. After commit, publish
-  `users.deleted` with `{ username }`; other packages subscribe and clean up
-  their own data. Never import or call another package's cleanup here.
-  `declarations/events.toml` documents the event for subscribers. Event
+  package's account, certificate, and authentication-session records. After
+  commit, publish `users.deleted` with `{ username }`; other packages subscribe
+  and clean up their own data. Never import or call another package's cleanup
+  here. `declarations/events.toml` documents the event for subscribers. Event
   publication failure reports that deletion already committed.
 - User detail links to `the8020/auth/user-roles`; auth owns role management and
   bidirectional navigation. `declarations/auth.toml` documents this package's
@@ -174,10 +177,12 @@ below.
   programs own user/session transactions and obtain command passwords only from
   execution-scoped secure input. There are no kernel recovery-user commands or
   bootstrap-administrator identity.
-- Password presence alone controls login: an empty password hash means no login,
-  including SSH key login. Creating a user without a password is supported;
-  setting an empty password removes login and invalidates existing sessions.
-  Listings expose only derived `has_password`, not a second login setting.
+- Password presence controls password, token/session, and SSH eligibility.
+  Certificate authentication independently requires an enabled account and a
+  valid enrolled certificate, allowing certificate-only accounts. Creating a
+  user without a password is supported; removing a password invalidates existing
+  sessions and SSH eligibility without removing enrolled certificates. Listings
+  expose only derived `has_password`, not a second login setting.
 - `hooks/ensure-system-user.toml` declares `hook = "post-activate"` and selects
   `the8020/users/ensure-system-user`. Its ordinary program inserts an enabled,
   passwordless `system` user if absent. It never overwrites an existing user.
@@ -185,8 +190,8 @@ below.
   as every other user.
 - All kernel principals, including `system`, remain independent of these rows.
   Account creation, disabling, deletion, or table loss never changes execution
-  identity or job admission. Login always requires an enabled password-bearing
-  row.
+  identity or job admission. Password login requires an enabled password-bearing
+  row; certificate eligibility stays in this package too.
 - Flat `cbus/commands/*.toml` declarations use a required `command` field for
   the complete public name; filenames are arbitrary. They map visible `users.*`
   and `users.sessions.*` commands to non-discoverable ordinary programs. Their
@@ -237,6 +242,10 @@ below.
   16-byte salt, and 32-byte output. Use pinned noble-hashes; no kernel password
   API or authentication settings remain. Unknown accounts still take the KDF
   path.
+- `vendor/` owns the Argon2 pin, committed external bundle, and original types
+  consumed by `src/password.ts`. `deno task bundle` regenerates this dependency
+  before publication; password policy and application modules remain ordinary
+  source.
 - Explicit public logout verifies presented credentials through the kernel
   bridge when needed, revokes their session when valid, and always clears the
   cookie for absent/invalid/expired tokens. Revocation failure returns an error
@@ -250,6 +259,16 @@ below.
   isolation, or execution mechanism. Minute expiry cleanup uses
   `events/cleanup-sessions.toml` with `event = "minute"` to invoke the existing
   sessions-cleanup program.
+- Client certificates use exact SHA-256 DER enrollment in
+  `tables/certificates.ts`. One fingerprint belongs to one user; per-user
+  listings and enrollment are bounded to 100. Accept one public PEM/DER client
+  certificate, validate its validity and usage, and retain public metadata only.
+  Never accept private keys. Owners may manage their own enrollment; other
+  callers require `users.user.certificates`. Native TLS proves possession; the
+  authenticate program resolves the fingerprint with one indexed join on every
+  request. Revocation and account disablement apply to existing/resumed
+  connections. Enrollment and deletion serialize on the account row. Roles
+  remain unchanged.
 
 # Work Guidance
 
@@ -266,6 +285,15 @@ below.
   authentication-session lifetime distinct from UUI, terminal, and execution
   lifetimes, and verify policy changes through the relevant entrypoint with
   bounded queries and cleanup.
+
+## UI Rules
+
+- Do not add explanatory helper copy that restates what the control already
+  implies (e.g. "optional", "works without selection", "failure falls back to
+  X"). Prefer clear labels and option text; surface status in results when
+  needed, not as instructional paragraphs under every field.
+- Keep UI copy concise. Avoid tutorial-style descriptions unless the user
+  explicitly asks for onboarding help.
 
 # Verification
 

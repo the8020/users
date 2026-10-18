@@ -53,9 +53,9 @@ export const accountInfo = z.object({
       "The account identity in `user:<username>` form, used to identify its authenticated work.",
   }),
   signIn: field(z.string(), {
-    label: "Sign-in",
+    label: "Password sign-in",
     description:
-      "Sign-in is allowed only when the account is enabled and has a password.",
+      "Password and SSH sign-in require an enabled account with a password. Certificate access is managed separately.",
     valueHelp: choiceHelp(z.string(), ["Allowed", "Disabled", "No password"]),
   }),
   activeSessions: field(z.number().int().nonnegative(), {
@@ -80,7 +80,7 @@ export const accountInfo = z.object({
   password: field(z.string(), {
     label: "Password",
     description:
-      "Enter a password for this account. Leave empty when creating an account that cannot sign in.",
+      "Enter a password for this account. Leave empty to create an account without password sign-in.",
   }),
   newPassword: field(z.string(), {
     label: "New password",
