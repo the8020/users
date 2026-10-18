@@ -29,17 +29,15 @@ export async function userCertificates(username: string): Promise<void> {
         schema: 1,
         id: "user-certificates",
         root: {
+          toolbar: [
+            { id: "add", label: "Add certificate", kind: "primary" },
+            { id: "refresh", label: "Refresh" },
+          ],
           type: "list",
           bind: "certificates",
           key: "fingerprint",
           display: ["label", "subject", "expiresAt"],
         },
-      },
-      header: {
-        actions: [
-          { id: "add", label: "Add certificate", kind: "primary" },
-          { id: "refresh", label: "Refresh" },
-        ],
       },
     });
     if (event.action === BACK_EVENT) return;

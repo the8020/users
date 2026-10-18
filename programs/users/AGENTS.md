@@ -14,6 +14,9 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 
 # Local Contracts
 
+- Account and certificate creation, list refresh, and Sign out all live in their
+  owning list toolbars. Detail and confirmation actions remain with their forms.
+
 - Administrative user detail exposes Roles and opens `the8020/auth/user-roles`
   with the selected username. The auth package owns personal-role creation,
   assignment editing, role details, and navigation back to users.

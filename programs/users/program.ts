@@ -73,17 +73,15 @@ export default async function usersProgram(
         schema: 1,
         id: "users",
         root: {
+          toolbar: [
+            { id: "add", label: "Add user", kind: "primary" },
+            { id: "refresh", label: "Refresh" },
+          ],
           type: "list",
           bind: "users",
           key: "username",
           display: ["username", "fullName", "signIn", "activeSessions"],
         },
-      },
-      header: {
-        actions: [
-          { id: "add", label: "Add user", kind: "primary" },
-          { id: "refresh", label: "Refresh" },
-        ],
       },
     });
     if (event.action === BACK_EVENT) return;
@@ -372,17 +370,15 @@ async function signIns(name: string): Promise<void> {
         schema: 1,
         id: "user-sign-ins",
         root: {
+          toolbar: [
+            { id: "sign-out", label: "Sign out all", kind: "danger" },
+            { id: "refresh", label: "Refresh" },
+          ],
           type: "list",
           bind: "sessions",
           key: "id",
           display: ["type", "transport", "created", "expires", "status"],
         },
-      },
-      header: {
-        actions: [
-          { id: "sign-out", label: "Sign out all", kind: "danger" },
-          { id: "refresh", label: "Refresh" },
-        ],
       },
     });
     if (event.action === BACK_EVENT) return;
