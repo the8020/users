@@ -9,6 +9,8 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 - Own the Users manifest and ordinary account, password, sign-in, and advanced
   screens. `../../src/admin.ts` owns account queries and mutations.
 - Export `userDetail` for My account to reuse the profile and password forms.
+- `certificates.ts` supplies the shared own-account and administrative
+  certificate list, public PEM/DER upload, details, and confirmed removal.
 
 # Local Contracts
 
@@ -35,6 +37,8 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
   calls the owning UUI program with that username.
 - Sign-ins show username/token type and local/remote access; revocation is
   shared by both kinds of authentication.
+- Certificate uploads use UUI's bounded binary picker; only filenames enter the
+  form Model. Enrollment and removal permissions stay in `src/certificates.ts`.
 
 # Work Guidance
 

@@ -8,6 +8,9 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 - `user.ts` exports `username`, the editable `userProfile` structure, and
   `userSummary`. Profile fields are shared by storage, validation, and screens.
+- `certificate.ts` owns enrolled certificate identity, name, issuer, subject,
+  validity, enrollment, and public-file input fields for storage and
+  administration.
 
 # Local Contracts
 

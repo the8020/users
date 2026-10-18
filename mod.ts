@@ -1,5 +1,6 @@
 export {
   authenticate,
+  authenticateCertificate,
   authenticatePassword,
   authenticationCookie,
   clearCookie,

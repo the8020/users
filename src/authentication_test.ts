@@ -1,4 +1,5 @@
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
+import { X509Certificate } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import {
   kernelDatabaseBackendSymbol,
@@ -15,6 +16,51 @@ const globals = globalThis as unknown as Record<symbol, unknown>;
 globals[kernelDatabaseBackendSymbol] = "sqlite";
 const users = await import("../mod.ts");
 const admin = await import("./admin.ts");
+const certificates = await import("./certificates.ts");
+import {
+  caCertificate,
+  clientCertificate,
+  expiredCertificate,
+  futureCertificate,
+  serverCertificate,
+} from "./certificate_fixtures.ts";
+
+Deno.test("certificate enrollment accepts one valid client X.509 certificate in PEM or DER", () => {
+  const parsed = certificates.inspectCertificate(clientCertificate);
+  assertEquals(
+    certificates.inspectCertificate(
+      new TextEncoder().encode(clientCertificate),
+    ),
+    parsed,
+  );
+  assertEquals(
+    parsed,
+    certificates.inspectCertificate(new X509Certificate(clientCertificate).raw),
+  );
+  assert(/^[a-f0-9]{64}$/.test(parsed.fingerprint));
+  for (
+    const invalid of [
+      "",
+      "invalid",
+      clientCertificate + clientCertificate,
+      clientCertificate + "-----BEGIN PRIVATE KEY-----",
+      serverCertificate,
+      expiredCertificate,
+      futureCertificate,
+      caCertificate,
+      "a".repeat(65537),
+    ]
+  ) {
+    assertThrows(() => certificates.inspectCertificate(invalid));
+    assertThrows(() =>
+      certificates.inspectCertificate(new TextEncoder().encode(invalid))
+    );
+  }
+  const der = new X509Certificate(clientCertificate).raw;
+  assertThrows(() =>
+    certificates.inspectCertificate(new Uint8Array([...der, 0]))
+  );
+});
 
 Deno.test("password hashing remains Argon2id with independent salts", async () => {
   // Fixed PHC produced by the former Go argon2.IDKey implementation.
@@ -45,7 +91,12 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     INSERT INTO the8020__system__settings VALUES ('system.profile', '{"id":"sys-aaaaaaaaaa","name":"Development","role":"development"}', 'the8020/system', '2026-01-01T00:00:00Z');
     CREATE TABLE the8020__users__sessions (sessionId TEXT PRIMARY KEY, username TEXT NOT NULL,
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, expiresAt TEXT NOT NULL,
-    type TEXT NOT NULL DEFAULT 'username', transport TEXT NOT NULL DEFAULT 'remote');`);
+    type TEXT NOT NULL DEFAULT 'username', transport TEXT NOT NULL DEFAULT 'remote');
+    CREATE TABLE the8020__users__certificates (
+      fingerprint TEXT PRIMARY KEY, username TEXT NOT NULL REFERENCES the8020__users__users(username),
+      label TEXT NOT NULL, subject TEXT NOT NULL, issuer TEXT NOT NULL,
+      validFrom TEXT NOT NULL, expiresAt TEXT NOT NULL, createdAt TEXT NOT NULL);
+    CREATE INDEX certificate_user ON the8020__users__certificates(username);`);
   const tokens = new Map<string, TokenClaims>();
   const deletedUsers: unknown[] = [];
   let databaseCalls = 0;
@@ -72,6 +123,12 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
           [],
         );
         deletedUsers.push(data.data);
+        assertEquals(
+          database.prepare(
+            "SELECT fingerprint FROM the8020__users__certificates WHERE username = ?",
+          ).all("alice"),
+          [],
+        );
         return Promise.resolve({
           success: true,
           result: { id: "event", listeners: 0 },
@@ -155,6 +212,73 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     assertEquals(found.rows, first.rows);
     assertEquals([found.more, found.totalItems], [false, 1]);
     assertEquals(await users.eligibleUser("passwordless"), undefined);
+    testUsername = "passwordless";
+    const enrolled = await certificates.addCertificate(
+      "passwordless",
+      "Service caller",
+      clientCertificate,
+    );
+    assertEquals(
+      (await certificates.listCertificates("passwordless"))[0]?.label,
+      "Service caller",
+    );
+    const beforeCertificateLookup = databaseCalls;
+    assertEquals(
+      (await users.authenticateCertificate(enrolled.fingerprint))?.username,
+      "passwordless",
+    );
+    assertEquals(databaseCalls - beforeCertificateLookup, 1);
+    assertEquals(
+      await users.authenticateCertificate("malformed"),
+      undefined,
+    );
+    assertEquals(databaseCalls - beforeCertificateLookup, 1);
+    await assertRejects(() =>
+      certificates.addCertificate(
+        "passwordless",
+        "Duplicate",
+        clientCertificate,
+      )
+    );
+    await assertRejects(() =>
+      certificates.addCertificate("alice", "Not my account", clientCertificate)
+    );
+    testUsername = "system";
+    await assertRejects(() =>
+      certificates.addCertificate("alice", "Already owned", clientCertificate)
+    );
+    await admin.disable("passwordless");
+    assertEquals(
+      await users.authenticateCertificate(enrolled.fingerprint),
+      undefined,
+    );
+    await admin.enable("passwordless");
+    assertEquals(
+      (await users.authenticateCertificate(enrolled.fingerprint))?.username,
+      "passwordless",
+    );
+    database.prepare(
+      "UPDATE the8020__users__certificates SET expiresAt = ? WHERE fingerprint = ?",
+    ).run("2000-01-01T00:00:00.000Z", enrolled.fingerprint);
+    assertEquals(
+      await users.authenticateCertificate(enrolled.fingerprint),
+      undefined,
+    );
+    await certificates.removeCertificate("alice", enrolled.fingerprint);
+    assertEquals(
+      (await certificates.listCertificates("passwordless")).length,
+      1,
+    );
+    await certificates.removeCertificate("passwordless", enrolled.fingerprint);
+    assertEquals(
+      await users.authenticateCertificate(enrolled.fingerprint),
+      undefined,
+    );
+    await certificates.addCertificate(
+      "alice",
+      "Service caller",
+      clientCertificate,
+    );
     assertEquals(await users.authenticatePassword("alice", "wrong"), undefined);
     const result = await users.login(request, {
       username: "alice",
@@ -363,6 +487,10 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       1,
     );
     await admin.remove("alice");
+    assertEquals(
+      await users.authenticateCertificate(enrolled.fingerprint),
+      undefined,
+    );
     assertEquals(deletedUsers, [{ username: "alice" }]);
     await assertRejects(() => admin.remove("alice"));
     assertEquals(deletedUsers.length, 1);

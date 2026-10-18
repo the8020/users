@@ -2,12 +2,12 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 # Purpose
 
-- Describe users and authentication sessions.
+- Describe users, authentication sessions, and enrolled client certificates.
 
 # Ownership
 
-- Own `users.ts` and `sessions.ts` and their descriptor tests; physical schema
-  deployment remains kernel-owned.
+- Own `users.ts`, `sessions.ts`, and `certificates.ts` and their descriptor
+  tests; physical schema deployment remains kernel-owned.
 
 # Local Contracts
 
@@ -25,6 +25,9 @@ Parent DOX: [users DOX](../AGENTS.md).
   username/remote defaults, covering cookies and allowances in one table.
 - Reuse the user fields from `../types/user.ts`; table-local keys and defaults
   remain explicit.
+- Certificates use the SHA-256 DER fingerprint as their globally unique primary
+  key, reference the owning user, and index username for bounded administration.
+  Store public identification and validity metadata only; never private keys.
 
 # Work Guidance
 

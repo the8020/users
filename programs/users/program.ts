@@ -136,6 +136,7 @@ export async function userDetail(
           controls: ["username", "fullName", "signIn", "activeSessions"],
           actions: [
             "sign-ins",
+            "certificates",
             "ui-sessions",
             ...(!selfService ? ["roles"] : []),
           ],
@@ -143,6 +144,7 @@ export async function userDetail(
       },
       actions: [
         { id: "sign-ins", label: "Sign-ins" },
+        { id: "certificates", label: "Certificates" },
         { id: "ui-sessions", label: "Open sessions" },
         ...(!selfService ? [{ id: "roles", label: "Roles" }] : []),
       ],
@@ -188,6 +190,10 @@ export async function userDetail(
         }
       }
       if (event.action === "sign-ins") await presentPage(() => signIns(name));
+      if (event.action === "certificates") {
+        const { userCertificates } = await import("./certificates.ts");
+        await presentPage(() => userCertificates(name));
+      }
       if (!selfService && event.action === "roles") {
         const { default: roles } = await import(
           "/p/the8020/auth/programs/user-roles/program.ts"
@@ -320,7 +326,7 @@ async function changePassword(user: User, allowRemoval = true): Promise<void> {
         if (
           !await confirm(
             `Remove the password for ${user.username}?`,
-            "They will be signed out and cannot sign in until a new password is set.",
+            "Password sign-ins will end. Enrolled certificates remain usable while the account is enabled.",
             "Remove password",
           )
         ) continue;
