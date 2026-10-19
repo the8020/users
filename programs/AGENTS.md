@@ -23,6 +23,8 @@ Parent DOX: [users DOX](../AGENTS.md).
 - Authenticate's `certificate` operation takes a native-verified fingerprint and
   returns the eligible username or null. Unlike password/user modes, the
   identity comes from enrollment; callers cannot select its account.
+- `widget-status` is the non-interactive data program of the Home Users tile:
+  account count plus signed-in and disabled counts from the shared `list()`.
 
 # Work Guidance
 

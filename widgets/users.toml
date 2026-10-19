@@ -1,0 +1,13 @@
+schema = 1
+title = "Users"
+description = "Manage accounts, passwords and sign-ins"
+icon = "group"
+category = "administration"
+order = 10
+
+[open]
+program = "the8020/users/users"
+
+[data]
+program = "the8020/users/widget-status"
+refresh = 60

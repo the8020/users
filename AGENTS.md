@@ -138,6 +138,8 @@ below.
 
 # Ownership
 
+- `widgets/` declares this package's Home tiles and categories through the
+  `the8020/packages/widgets.ts` format.
 - Own authored schemas, administrative command programs, user mutations, and
   authentication sessions and token claims. The Users UUI program owns account
   lists and details, full-name and password editing, enrolled certificates, and
