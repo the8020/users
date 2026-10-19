@@ -297,6 +297,9 @@ below.
 
 # Verification
 
+- Run package tasks inside an 80|20 Deno workspace; its root config supplies
+  platform imports. The package config owns dependencies and tasks.
+
 - `deno task check` formats, lints, and type-checks all table modules and
   programs.
 - `deno task test` verifies schemas, password behavior, SQLite-backed login,
