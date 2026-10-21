@@ -15,7 +15,11 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 
 - Accept no target identity. Resolve `currentUser()` and reject unauthenticated
   calls before opening the shared detail screen in self-service mode.
-- The UUI quick menu calls this program directly on an ordinary page surface.
+- The UUI quick menu calls this program directly on an ordinary page surface;
+  the public Home tile `widgets/my-account.toml` opens it too.
+- Self-service mode replaces the administrative Roles action with My roles,
+  `the8020/auth/my-roles`: a read-only list of the user's own roles, their
+  descriptions and assignment values, needing no `the8020.auth.users.view`.
 
 # Work Guidance
 

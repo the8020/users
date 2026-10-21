@@ -2,3 +2,8 @@
 title = "Administration"
 icon = "admin_panel_settings"
 order = 10
+
+[personal]
+title = "Personal"
+icon = "person"
+order = 0

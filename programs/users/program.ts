@@ -136,7 +136,7 @@ export async function userDetail(
             "sign-ins",
             "certificates",
             "ui-sessions",
-            ...(!selfService ? ["roles"] : []),
+            selfService ? "my-roles" : "roles",
           ],
         },
       },
@@ -144,7 +144,9 @@ export async function userDetail(
         { id: "sign-ins", label: "Sign-ins" },
         { id: "certificates", label: "Certificates" },
         { id: "ui-sessions", label: "Open sessions" },
-        ...(!selfService ? [{ id: "roles", label: "Roles" }] : []),
+        selfService
+          ? { id: "my-roles", label: "My roles" }
+          : { id: "roles", label: "Roles" },
       ],
       header: {
         actions: [
@@ -197,6 +199,12 @@ export async function userDetail(
           "/p/the8020/auth/programs/user-roles/program.ts"
         );
         await presentPage(() => roles(name));
+      }
+      if (selfService && event.action === "my-roles") {
+        const { default: ownRoles } = await import(
+          "/p/the8020/auth/programs/my-roles/program.ts"
+        );
+        await presentPage(() => ownRoles());
       }
       if (event.action === "ui-sessions") {
         const { default: sessions } = await import(

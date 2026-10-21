@@ -1,0 +1,7 @@
+["the8020.users.administrator"]
+description = "Every permission in every package, including administration and development."
+permissions = { "*" = "*" }
+
+["the8020.users.user"]
+description = "A signed-in user without platform permissions; include application roles to grant access."
+collection = true

@@ -139,7 +139,10 @@ below.
 # Ownership
 
 - `widgets/` declares this package's Home tiles and categories through the
-  `the8020/packages/widgets.ts` format.
+  `the8020/packages/widgets.ts` format; the Users tile is visible with
+  `the8020.users.user.view`, and the public My account tile (category
+  `personal`, shown first) opens `the8020/users/my-account` for every signed-in
+  user.
 - Own authored schemas, administrative command programs, user mutations, and
   authentication sessions and token claims. The Users UUI program owns account
   lists and details, full-name and password editing, enrolled certificates, and
@@ -153,6 +156,15 @@ below.
 # Local Contracts
 
 - Account mutations enforce `users.user.*` permissions in `src/admin.ts`.
+- `declarations/auth-roles.toml` declares the platform roles, synchronized by
+  auth as managed roles: `the8020.users.administrator` (`*` → `*`, given to the
+  initial Docker user) and `the8020.users.user`, an empty collection to which
+  administrators add application roles.
+- Account reads enforce `the8020.users.user.view` (value username) in
+  `src/admin.ts`: `user()` and `listSessions(username)` require it except for
+  the authenticated user's own account; `list()` and the all-users session list
+  keep only viewable accounts plus the user's own, through auth's unaudited
+  `filter`. Results returned after an authorized mutation are not checked again.
   Authenticated users may edit their own profile, replace their own password,
   and revoke their own sign-ins. Enablement, deletion, and password removal
   require explicit authority; system execution bypasses checks in auth.
@@ -266,11 +278,11 @@ below.
   listings and enrollment are bounded to 100. Accept one public PEM/DER client
   certificate, validate its validity and usage, and retain public metadata only.
   Never accept private keys. Owners may manage their own enrollment; other
-  callers require `users.user.certificates`. Native TLS proves possession; the
-  authenticate program resolves the fingerprint with one indexed join on every
-  request. Revocation and account disablement apply to existing/resumed
-  connections. Enrollment and deletion serialize on the account row. Roles
-  remain unchanged.
+  callers require `the8020.users.user.certificates`. Native TLS proves
+  possession; the authenticate program resolves the fingerprint with one indexed
+  join on every request. Revocation and account disablement apply to
+  existing/resumed connections. Enrollment and deletion serialize on the account
+  row. Roles remain unchanged.
 
 # Work Guidance
 

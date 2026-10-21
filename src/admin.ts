@@ -9,7 +9,7 @@ import Users, { type UserRow } from "../tables/users.ts";
 import { userProfile } from "../types/user.ts";
 import type { z } from "/p/the8020/db/fields.ts";
 import { context } from "@the8020/context";
-import { requirePermission } from "/p/the8020/auth/mod.ts";
+import { filter, requirePermission } from "/p/the8020/auth/mod.ts";
 
 type User = Selectable<UserRow>;
 type PublicUser = Omit<User, "passwordHash"> & { passwordSet: number };
@@ -42,7 +42,38 @@ function summarize(record: PublicUser, activeSessions: number) {
   };
 }
 
+const VIEW = "the8020.users.user.view";
+
+/** Reading another account requires view; your own account is always visible. */
+async function requireView(username: string) {
+  if (!context.authenticated || context.username !== username) {
+    await requirePermission(VIEW, username);
+  }
+}
+
+/** Keep rows of accounts the current user may view or owns; never audits. */
+async function viewable<T extends { username: string }>(
+  rows: T[],
+): Promise<T[]> {
+  const own = (row: T) =>
+    context.authenticated && row.username === context.username;
+  const allowed = new Set(
+    await filter(
+      context.username,
+      rows.filter((row) => !own(row)),
+      { username: VIEW } as Partial<Record<keyof T, string>>,
+    ),
+  );
+  return rows.filter((row) => own(row) || allowed.has(row));
+}
+
 export async function user(username: string, database: Queryable = db) {
+  await requireView(username);
+  return await readUser(username, database);
+}
+
+/** Unchecked read for results of operations that were already authorized. */
+async function readUser(username: string, database: Queryable = db) {
   const record = await database.selectFrom(Users.table)
     .select([
       Users.username,
@@ -73,7 +104,7 @@ export async function user(username: string, database: Queryable = db) {
 
 export async function add(username: string, password = "", fullName = "") {
   validateUsername(username);
-  await requirePermission("users.user.create", username);
+  await requirePermission("the8020.users.user.create", username);
   const profile = userProfile.parse({ fullName });
   const passwordHash = password === "" ? "" : await hashPassword(password);
   const now = new Date();
@@ -93,7 +124,7 @@ export async function add(username: string, password = "", fullName = "") {
       message: `user ${username} already exists`,
     });
   }
-  return { user: await user(username) };
+  return { user: await readUser(username) };
 }
 
 export async function list() {
@@ -124,15 +155,17 @@ export async function list() {
     }
   }
   return {
-    users: records.map((record) =>
-      summarize(record, counts.get(record.username) ?? 0)
+    users: await viewable(
+      records.map((record) =>
+        summarize(record, counts.get(record.username) ?? 0)
+      ),
     ),
   };
 }
 
 export async function remove(username: string) {
   validateUsername(username);
-  await requirePermission("users.user.delete", username);
+  await requirePermission("the8020.users.user.delete", username);
   const result = await db.transaction().execute(async (transaction) => {
     await transaction.updateTable(Users.table)
       .set({ updatedAt: new Date() })
@@ -183,7 +216,7 @@ async function update(
         .where(Sessions.username, "=", username)
         .execute();
     }
-    return { user: await user(username, transaction) };
+    return { user: await readUser(username, transaction) };
   });
 }
 
@@ -192,7 +225,7 @@ export async function updateDetails(
   details: z.infer<typeof userProfile>,
 ) {
   if (!context.authenticated || context.username !== username) {
-    await requirePermission("users.user.edit", username);
+    await requirePermission("the8020.users.user.edit", username);
   }
   const profile = userProfile.parse(details);
   return update(username, false, async (transaction) => {
@@ -205,7 +238,7 @@ export async function updateDetails(
 }
 
 export async function enable(username: string) {
-  await requirePermission("users.user.edit", username);
+  await requirePermission("the8020.users.user.edit", username);
   return update(username, false, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({ enabled: true, updatedAt: new Date() })
@@ -216,7 +249,7 @@ export async function enable(username: string) {
 }
 
 export async function disable(username: string) {
-  await requirePermission("users.user.edit", username);
+  await requirePermission("the8020.users.user.edit", username);
   return update(username, true, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({
@@ -236,7 +269,7 @@ export async function setPassword(username: string, password: string) {
   if (
     !context.authenticated || context.username !== username || password === ""
   ) {
-    await requirePermission("users.user.password", username);
+    await requirePermission("the8020.users.user.password", username);
   }
   const passwordHash = password === "" ? "" : await hashPassword(password);
   return await update(username, true, async (transaction) => {
@@ -254,7 +287,7 @@ export async function setPassword(username: string, password: string) {
 
 export async function invalidateSessions(username: string) {
   if (!context.authenticated || context.username !== username) {
-    await requirePermission("users.user.sessions", username);
+    await requirePermission("the8020.users.user.sessions", username);
   }
   return update(username, true, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
@@ -269,6 +302,7 @@ export async function invalidateSessions(username: string) {
 }
 
 export async function listSessions(username?: string) {
+  if (username !== undefined) await requireView(username);
   const [records, users] = await Promise.all([
     Sessions.select([
       Sessions.sessionId,
@@ -294,8 +328,16 @@ export async function listSessions(username?: string) {
   ]);
   const accounts = new Map(users.map((user) => [user.username, user]));
   const now = new Date();
+  const visible = new Set(
+    username !== undefined
+      ? [username]
+      : (await viewable(users.map((user) => ({ username: user.username }))))
+        .map((user) => user.username),
+  );
   return {
-    authentication_sessions: records.map((record) => {
+    authentication_sessions: records.filter((record) =>
+      visible.has(record.username)
+    ).map((record) => {
       const account = accounts.get(record.username);
       return {
         session_id: record.sessionId,
@@ -327,7 +369,7 @@ export async function revokeSession(sessionId: string) {
   if (
     session && (!context.authenticated || context.username !== session.username)
   ) {
-    await requirePermission("users.user.sessions", session.username);
+    await requirePermission("the8020.users.user.sessions", session.username);
   }
   await Sessions.delete().where(Sessions.sessionId, "=", sessionId).execute();
   return { revoked: true };
@@ -336,7 +378,7 @@ export async function revokeSession(sessionId: string) {
 export async function revokeUserSessions(username: string) {
   validateUsername(username);
   if (!context.authenticated || context.username !== username) {
-    await requirePermission("users.user.sessions", username);
+    await requirePermission("the8020.users.user.sessions", username);
   }
   const result = await Sessions.delete().where(
     Sessions.username,

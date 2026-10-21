@@ -11,3 +11,6 @@ program = "the8020/users/users"
 [data]
 program = "the8020/users/widget-status"
 refresh = 60
+
+[visible]
+permission = "the8020.users.user.view"

@@ -67,7 +67,7 @@ export function inspectCertificate(input: string | Uint8Array) {
 
 async function authorize(username: string) {
   if (!context.authenticated || context.username !== username) {
-    await requirePermission("users.user.certificates", username);
+    await requirePermission("the8020.users.user.certificates", username);
   }
 }
 

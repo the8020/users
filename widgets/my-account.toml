@@ -1,0 +1,12 @@
+schema = 1
+title = "My account"
+description = "Your details, password, sign-ins, sessions and roles"
+icon = "account_circle"
+category = "personal"
+order = 10
+
+[open]
+program = "the8020/users/my-account"
+
+[visible]
+public = true
