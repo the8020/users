@@ -124,6 +124,15 @@ export async function add(username: string, password = "", fullName = "") {
       message: `user ${username} already exists`,
     });
   }
+  try {
+    await kernel.events.emit("users.created", { username });
+  } catch (error) {
+    throw new AdminCommandError({
+      code: "runtime_operation",
+      message:
+        `User ${username} was created; event publication failed: ${error}`,
+    });
+  }
   return { user: await readUser(username) };
 }
 

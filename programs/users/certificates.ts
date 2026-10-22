@@ -1,6 +1,7 @@
 import {
   BACK_EVENT,
   callScreen,
+  confirmAction,
   fileUpload,
   Model,
   presentModal,
@@ -126,22 +127,11 @@ async function detail(username: string, selected: z.infer<typeof certificate>) {
     });
     if (event.action === BACK_EVENT) return;
     if (event.action !== "remove") continue;
-    const confirmed = await presentModal(async () => {
-      const result = await callScreen({
-        id: "user-certificate-remove",
-        title: "Remove certificate?",
-        description: "Subsequent calls using this certificate will be denied.",
-        schema: z.object({}),
-        model: new Model({}),
-        header: {
-          actions: [{
-            id: "remove",
-            label: "Remove certificate",
-            kind: "danger",
-          }],
-        },
-      });
-      return result.action === "remove";
+    const confirmed = await confirmAction({
+      id: "user-certificate-remove",
+      title: "Remove certificate?",
+      message: "Subsequent calls using this certificate will be denied.",
+      confirm: "Remove certificate",
     });
     if (!confirmed) continue;
     try {

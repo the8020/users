@@ -221,6 +221,10 @@ below.
   common actions ahead of technical details and deletion, which live under
   Advanced. Mutations reuse `src/admin.ts`; UI programs never load password
   hashes.
+- `add` publishes `users.created` (`{ username }`) after inserting the account,
+  as the creating user; a publication failure reports that the account was
+  created. Auth assigns default roles from it; users never calls auth role
+  operations.
 - `the8020/users/my-account` takes no target username and reads `currentUser()`.
   It opens shared detail/profile/password forms without account enablement,
   deletion, or password removal. Full names are trimmed, limited to 200

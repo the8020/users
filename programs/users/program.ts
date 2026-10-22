@@ -1,6 +1,7 @@
 import {
   BACK_EVENT,
   callScreen,
+  confirmAction,
   field,
   Model,
   presentModal,
@@ -473,25 +474,17 @@ async function advanced(user: User): Promise<boolean> {
   }
 }
 
-async function confirm(
+function confirm(
   title: string,
-  description: string,
+  message: string,
   label: string,
 ): Promise<boolean> {
-  return await presentModal(async () => {
-    const event = await callScreen({
-      id: "user-confirm",
-      title,
-      description,
-      schema: z.object({}),
-      model: new Model({}),
-      actions: [{ id: "cancel", label: "Cancel" }, {
-        id: "confirm",
-        label,
-        kind: "danger",
-      }],
-    });
-    return event.action === "confirm";
+  return confirmAction({
+    id: "user-confirm",
+    title,
+    message,
+    confirm: label,
+    cancel: "Cancel",
   });
 }
 

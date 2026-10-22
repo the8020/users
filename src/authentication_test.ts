@@ -99,6 +99,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     CREATE INDEX certificate_user ON the8020__users__certificates(username);`);
   const tokens = new Map<string, TokenClaims>();
   const deletedUsers: unknown[] = [];
+  const createdUsers: unknown[] = [];
   let databaseCalls = 0;
   globals[kernelInvokeSymbol] = (
     operation: string,
@@ -106,6 +107,13 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
   ) => {
     if (operation === "runtime.operation") {
       const data = input.input as Record<string, unknown>;
+      if (input.operation === "event.emit" && data.name === "users.created") {
+        createdUsers.push(data.data);
+        return Promise.resolve({
+          success: true,
+          result: { id: "event", listeners: 1 },
+        });
+      }
       if (input.operation === "event.emit") {
         assertEquals(data.name, "users.deleted");
         assertEquals(
@@ -492,6 +500,12 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       undefined,
     );
     assertEquals(deletedUsers, [{ username: "alice" }]);
+    // Every account creation was announced for listeners such as auth.
+    assert(
+      createdUsers.some((item) =>
+        (item as { username: string }).username === "alice"
+      ),
+    );
     await assertRejects(() => admin.remove("alice"));
     assertEquals(deletedUsers.length, 1);
     database.exec("DROP TABLE the8020__users__sessions");
