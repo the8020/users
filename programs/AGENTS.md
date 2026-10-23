@@ -25,6 +25,8 @@ Parent DOX: [users DOX](../AGENTS.md).
   identity comes from enrollment; callers cannot select its account.
 - `widget-status` is the non-interactive data program of the Home Users tile:
   account count plus signed-in and disabled counts from the shared `list()`.
+- `my-account-status` is the data program of the Home My account tile: empty
+  unless the signed-in user's first-expiring certificate has under 30 days left.
 
 # Work Guidance
 

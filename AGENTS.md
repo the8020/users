@@ -142,7 +142,8 @@ below.
   `the8020/packages/widgets.ts` format; the Users tile is visible with
   `the8020.users.user.view`, and the public My account tile (category
   `personal`, shown first) opens `the8020/users/my-account` for every signed-in
-  user.
+  user. Its `my-account-status` data shows the user's first-expiring valid
+  certificate only below 30 days left (warning; danger below 10).
 - Own authored schemas, administrative command programs, user mutations, and
   authentication sessions and token claims. The Users UUI program owns account
   lists and details, full-name and password editing, enrolled certificates, and

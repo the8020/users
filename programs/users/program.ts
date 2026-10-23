@@ -11,6 +11,10 @@ import {
 } from "/p/the8020/uui/mod.ts";
 import * as accounts from "../../src/admin.ts";
 import {
+  CERTIFICATE_URGENT_DAYS,
+  nearestCertificateExpiry,
+} from "../../src/certificates.ts";
+import {
   accountInfo,
   authenticationSession,
   newUsername,
@@ -31,6 +35,11 @@ const Account = UserRow.pick({
   activeSessions: true,
 }).extend({
   username: field(username, { readOnly: true }),
+  certificate: field(z.string(), {
+    label: "Certificate",
+    description:
+      "The enrolled certificate that expires first. Request a new certificate before it expires.",
+  }),
 });
 const SignIn = authenticationSession.extend({
   created: field(authenticationSession.shape.created, {
@@ -101,6 +110,7 @@ export async function userDetail(
   selfService = false,
 ): Promise<void> {
   let model: Model<z.infer<typeof Account>> | undefined;
+  let warned = false;
   while (true) {
     let user: User;
     try {
@@ -109,8 +119,27 @@ export async function userDetail(
       showError(error);
       return;
     }
-    model ??= new Model(summary(user));
-    Object.assign(model.data, summary(user));
+    // Certificate listing has its own permission; omit the summary without it.
+    const expiry = await nearestCertificateExpiry(name).catch(() => undefined);
+    const certificate = expiry === undefined
+      ? ""
+      : `${expiry.label}: ${expiry.text.toLowerCase()} (${
+        expiry.expiresAt.toISOString().slice(0, 10)
+      })`;
+    if (
+      selfService && !warned && expiry !== undefined &&
+      expiry.days < CERTIFICATE_URGENT_DAYS
+    ) {
+      warned = true;
+      sendMessage(
+        `Your certificate ${certificate}. Request a new certificate.`,
+        "warning",
+      );
+    }
+    model ??= new Model({ ...summary(user), certificate });
+    Object.assign(model.data, summary(user), { certificate });
+    const details = ["username", "fullName", "signIn", "activeSessions"];
+    if (certificate) details.push("certificate");
     const event = await callScreen({
       id: selfService ? "my-account" : "user-detail",
       title: selfService ? "My account" : `User ${name}`,
@@ -126,13 +155,21 @@ export async function userDetail(
           readOnly: true,
           length: "short",
         },
+        ...(certificate
+          ? [{
+            id: "certificate",
+            bind: "certificate",
+            readOnly: true,
+            length: "long" as const,
+          }]
+          : []),
       ],
       layout: {
         schema: 1,
         id: "user-detail",
         root: {
           type: "detail",
-          controls: ["username", "fullName", "signIn", "activeSessions"],
+          controls: details,
           actions: [
             "sign-ins",
             "certificates",

@@ -11,16 +11,24 @@ import {
 } from "/p/the8020/uui/mod.ts";
 import {
   addCertificate,
+  certificateValidity,
   listCertificates,
   removeCertificate,
 } from "../../src/certificates.ts";
-import { certificate, certificateFile } from "../../types/certificate.ts";
+import {
+  certificate,
+  certificateFile,
+  certificateRow,
+} from "../../types/certificate.ts";
 
 export async function userCertificates(username: string): Promise<void> {
-  const schema = z.object({ certificates: z.array(certificate) });
+  const schema = z.object({ certificates: z.array(certificateRow) });
   const model = new Model<z.infer<typeof schema>>({ certificates: [] });
   while (true) {
-    model.data.certificates = await listCertificates(username);
+    model.data.certificates = (await listCertificates(username)).map((row) => ({
+      ...row,
+      validity: certificateValidity(row.expiresAt).text,
+    }));
     const event = await callScreen({
       id: "user-certificates",
       title: `Certificates · ${username}`,
@@ -37,7 +45,7 @@ export async function userCertificates(username: string): Promise<void> {
           type: "list",
           bind: "certificates",
           key: "fingerprint",
-          display: ["label", "subject", "expiresAt"],
+          display: ["label", "subject", "expiresAt", "validity"],
         },
       },
     });
@@ -103,15 +111,18 @@ async function enroll(username: string) {
   }
 }
 
-async function detail(username: string, selected: z.infer<typeof certificate>) {
+async function detail(
+  username: string,
+  selected: z.infer<typeof certificateRow>,
+) {
   const model = new Model(selected);
   while (true) {
     const event = await callScreen({
       id: "user-certificate",
       title: selected.label || "Certificate",
-      schema: certificate,
+      schema: certificateRow,
       model,
-      controls: Object.keys(certificate.shape).map((key) => ({
+      controls: Object.keys(certificateRow.shape).map((key) => ({
         id: key,
         bind: key,
         readOnly: true,

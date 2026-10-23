@@ -10,3 +10,7 @@ program = "the8020/users/my-account"
 
 [visible]
 public = true
+
+[data]
+program = "the8020/users/my-account-status"
+refresh = 3600

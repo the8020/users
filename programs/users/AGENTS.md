@@ -10,7 +10,11 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
   screens. `../../src/admin.ts` owns account queries and mutations.
 - Export `userDetail` for My account to reuse the profile and password forms.
 - `certificates.ts` supplies the shared own-account and administrative
-  certificate list, public PEM/DER upload, details, and confirmed removal.
+  certificate list with remaining validity, public PEM/DER upload, details, and
+  confirmed removal.
+- Account detail shows the first-expiring certificate when the caller may list
+  the account's certificates. My account warns once per opening when it has
+  fewer than 10 days left.
 
 # Local Contracts
 

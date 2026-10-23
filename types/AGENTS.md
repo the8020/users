@@ -10,7 +10,8 @@ Parent DOX: [users DOX](../AGENTS.md).
   `userSummary`. Profile fields are shared by storage, validation, and screens.
 - `certificate.ts` owns enrolled certificate identity, name, issuer, subject,
   validity, enrollment, and public-file input fields for storage and
-  administration.
+  administration; `certificateRow` adds the derived remaining validity for
+  screens.
 
 # Local Contracts
 

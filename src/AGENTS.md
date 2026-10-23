@@ -47,7 +47,10 @@ Parent DOX: [users DOX](../AGENTS.md).
 - Login and allowance issuance share `issueSession`; allowance ownership comes
   from the trusted execution context. Validate signed transport against the
   session row and include type/transport in the existing sign-in listing.
-- `certificates.ts` owns enrollment, bounded user listings, and removal.
+- `certificates.ts` owns enrollment, bounded user listings, and removal. It also
+  owns expiry display: whole remaining days rounded down, `warning` below
+  `CERTIFICATE_WARNING_DAYS` (30) and `danger` below `CERTIFICATE_URGENT_DAYS`
+  (10), and the first-expiring currently valid certificate of a user.
   `authentication.ts` resolves enabled accounts by exact SHA-256 DER fingerprint
   without importing the enrollment parser or administration dependencies.
   Enrollment parses public certificates with the vendored X.509 library; Deno's

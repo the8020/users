@@ -63,6 +63,24 @@ Deno.test("certificate enrollment accepts one valid client X.509 certificate in 
   );
 });
 
+Deno.test("certificate validity counts whole remaining days with severity", () => {
+  const now = new Date("2026-10-23T12:00:00Z");
+  const at = (days: number) => new Date(now.getTime() + days * 86_400_000);
+  const validity = (days: number) => {
+    const result = certificates.certificateValidity(at(days), now);
+    return [result.days, result.status, result.text, result.expired];
+  };
+  assertEquals(validity(45), [45, "ok", "Expires in 45 days", false]);
+  assertEquals(validity(30), [30, "ok", "Expires in 30 days", false]);
+  assertEquals(validity(29.5), [29, "warning", "Expires in 29 days", false]);
+  assertEquals(validity(10), [10, "warning", "Expires in 10 days", false]);
+  assertEquals(validity(9.9), [9, "danger", "Expires in 9 days", false]);
+  assertEquals(validity(1), [1, "danger", "Expires in 1 day", false]);
+  assertEquals(validity(0.5), [0, "danger", "Expires within a day", false]);
+  assertEquals(validity(0), [0, "danger", "Expired", true]);
+  assertEquals(validity(-3), [0, "danger", "Expired", true]);
+});
+
 Deno.test("password hashing remains Argon2id with independent salts", async () => {
   // Fixed PHC produced by the former Go argon2.IDKey implementation.
   const legacy =
@@ -262,6 +280,22 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     assertEquals(
       (await certificates.listCertificates("passwordless"))[0]?.label,
       "Service caller",
+    );
+    // The fixture certificate expires at 2100-01-01T00:00:00Z.
+    const nearest = await certificates.nearestCertificateExpiry(
+      "passwordless",
+      new Date("2099-12-25T12:00:00Z"),
+    );
+    assertEquals(
+      [nearest?.label, nearest?.days, nearest?.status, nearest?.text],
+      ["Service caller", 6, "danger", "Expires in 6 days"],
+    );
+    assertEquals(
+      await certificates.nearestCertificateExpiry(
+        "passwordless",
+        new Date("2100-01-01T00:00:00Z"),
+      ),
+      undefined,
     );
     await hook(
       { method: "certificate", fingerprint: enrolled.fingerprint },

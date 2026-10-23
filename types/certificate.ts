@@ -37,3 +37,11 @@ export const certificate = z.object({
     description: "When the certificate was enrolled for this account.",
   }),
 });
+
+export const certificateRow = certificate.extend({
+  validity: field(z.string(), {
+    label: "Validity",
+    description:
+      "Time left before the certificate expires. Request a new certificate before it does.",
+  }),
+});

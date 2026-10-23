@@ -65,6 +65,45 @@ export function inspectCertificate(input: string | Uint8Array) {
   };
 }
 
+/** Remaining days below which a certificate is shown as expiring soon. */
+export const CERTIFICATE_WARNING_DAYS = 30;
+/** Remaining days below which the owner is prompted to request a new one. */
+export const CERTIFICATE_URGENT_DAYS = 10;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Whole remaining days, rounded down, with display text and severity. */
+export function certificateValidity(expiresAt: Date, now = new Date()) {
+  const remaining = expiresAt.getTime() - now.getTime();
+  const days = Math.max(0, Math.floor(remaining / DAY_MS));
+  const text = remaining <= 0
+    ? "Expired"
+    : days === 0
+    ? "Expires within a day"
+    : `Expires in ${days} ${days === 1 ? "day" : "days"}`;
+  const status = remaining <= 0 || days < CERTIFICATE_URGENT_DAYS
+    ? "danger" as const
+    : days < CERTIFICATE_WARNING_DAYS
+    ? "warning" as const
+    : "ok" as const;
+  return { expired: remaining <= 0, days, text, status };
+}
+
+/** The user's currently valid certificate that expires first, if any. */
+export async function nearestCertificateExpiry(
+  username: string,
+  now = new Date(),
+) {
+  const nearest = (await listCertificates(username))
+    .filter((row) => row.validFrom <= now && row.expiresAt > now)
+    .sort((a, b) => a.expiresAt.getTime() - b.expiresAt.getTime())[0];
+  if (nearest === undefined) return undefined;
+  return {
+    label: nearest.label || nearest.subject,
+    expiresAt: nearest.expiresAt,
+    ...certificateValidity(nearest.expiresAt, now),
+  };
+}
+
 async function authorize(username: string) {
   if (!context.authenticated || context.username !== username) {
     await requirePermission("the8020.users.user.certificates", username);
