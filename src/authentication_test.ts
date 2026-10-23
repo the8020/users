@@ -4,6 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 import {
   kernelDatabaseBackendSymbol,
   kernelInvokeSymbol,
+  kernelSecretSymbol,
   type TokenClaims,
 } from "@the8020/kernel";
 import { hashPassword, verifyPassword } from "./password.ts";
@@ -191,9 +192,41 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
   const request = new Request("https://example.test/login", {
     headers: { cookie: "the8020_auth_sys-aaaaaaaaaa=stale" },
   });
+  let hookPassword = "correct horse";
+  globals[kernelSecretSymbol] = () => hookPassword;
+  const hook = async (
+    input: Parameters<typeof users.authenticate>[1],
+    expected: string | number,
+  ) => {
+    const result = await users.authenticate(request, input, {
+      action: "reject",
+      status: 401,
+    });
+    if (typeof expected === "string") {
+      assertEquals(result, { userId: `user:${expected}`, username: expected });
+    } else {
+      assert(result instanceof Response);
+      assertEquals(result.status, expected);
+      assertEquals(result.headers.get("cache-control"), "no-store");
+      assertEquals(
+        result.headers.get("www-authenticate"),
+        'Basic realm="80|20", charset="UTF-8"',
+      );
+    }
+  };
   try {
     await admin.add("alice", "correct horse", " Alice Example ");
     await admin.add("passwordless");
+    await hook({ method: "password", username: "alice" }, "alice");
+    hookPassword = "wrong";
+    await hook({ method: "password", username: "alice" }, 401);
+    hookPassword = "correct horse";
+    await hook({ method: "password", username: "passwordless" }, 401);
+    assertEquals(
+      database.prepare("SELECT count(*) AS n FROM the8020__users__sessions")
+        .get()!.n,
+      0,
+    );
     const lookup = fieldMetadata(username)!.valueHelp!;
     const beforeLookup = databaseCalls;
     const query = { search: "", filters: {}, sort: null };
@@ -230,6 +263,10 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       (await certificates.listCertificates("passwordless"))[0]?.label,
       "Service caller",
     );
+    await hook(
+      { method: "certificate", fingerprint: enrolled.fingerprint },
+      "passwordless",
+    );
     const beforeCertificateLookup = databaseCalls;
     assertEquals(
       (await users.authenticateCertificate(enrolled.fingerprint))?.username,
@@ -256,6 +293,10 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       certificates.addCertificate("alice", "Already owned", clientCertificate)
     );
     await admin.disable("passwordless");
+    await hook(
+      { method: "certificate", fingerprint: enrolled.fingerprint },
+      401,
+    );
     assertEquals(
       await users.authenticateCertificate(enrolled.fingerprint),
       undefined,
@@ -278,6 +319,10 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       1,
     );
     await certificates.removeCertificate("passwordless", enrolled.fingerprint);
+    await hook(
+      { method: "certificate", fingerprint: enrolled.fingerprint },
+      401,
+    );
     assertEquals(
       await users.authenticateCertificate(enrolled.fingerprint),
       undefined,
@@ -412,6 +457,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       password: "correct horse",
     });
     const secondClaims = tokens.get(second.token!)!;
+    await hook({ method: "token", claims: secondClaims }, "alice");
     await admin.disable("alice");
     const disabled = await lookup({
       query: { ...query, search: "alice" },
@@ -427,11 +473,14 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     assertEquals(await users.validateSession(secondClaims), undefined);
     assertEquals(await users.eligibleUser("alice"), undefined);
     assertEquals(
-      (await users.authenticate(request, secondClaims, {
+      (await users.authenticate(request, {
+        method: "token",
+        claims: secondClaims,
+      }, {
         action: "redirect",
         status: 303,
         redirect_url: "/login",
-      }))?.headers.get("location"),
+      }) as Response).headers.get("location"),
       "/login",
     );
     await admin.enable("alice");
@@ -533,6 +582,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
   } finally {
     restoreContext();
     delete globals[kernelInvokeSymbol];
+    delete globals[kernelSecretSymbol];
     database.close();
   }
 });

@@ -270,21 +270,23 @@ below.
   with cookie removal. Setting and clearing use Path=/, HttpOnly, SameSite=Lax,
   and Secure for HTTPS. Stale cookies do not block public login, which replaces
   them on success.
-- Native SSH, console, and shared HTTP Basic admission use
-  `programs/authenticate` through ordinary jobs with normal mounts and secure
-  inputs. Basic checks the enabled account and password on every request and
-  creates no authentication session. There is no extra authentication service,
-  isolation, or execution mechanism. Minute expiry cleanup uses
-  `events/cleanup-sessions.toml` with `event = "minute"` to invoke the existing
-  sessions-cleanup program.
+- Native SSH and console admission use `programs/authenticate` through ordinary
+  jobs with normal mounts and secure inputs. HTTP Basic and certificate requests
+  call the shared password/certificate functions directly through `authenticate`
+  in the target service Worker, creating no authentication job or session. The
+  hook receives private credential input, reads password from its
+  execution-local secret, and returns a canonical user or rejection Response.
+  Token input carries verified claims and cookie-selection provenance; handlers
+  see no credentials. Minute expiry cleanup uses `events/cleanup-sessions.toml`
+  with `event = "minute"` to invoke the existing sessions-cleanup program.
 - Client certificates use exact SHA-256 DER enrollment in
   `tables/certificates.ts`. One fingerprint belongs to one user; per-user
   listings and enrollment are bounded to 100. Accept one public PEM/DER client
   certificate, validate its validity and usage, and retain public metadata only.
   Never accept private keys. Owners may manage their own enrollment; other
   callers require `the8020.users.user.certificates`. Native TLS proves
-  possession; the authenticate program resolves the fingerprint with one indexed
-  join on every request. Revocation and account disablement apply to
+  possession; the shared authentication function resolves the fingerprint with
+  one indexed join on every request. Revocation and account disablement apply to
   existing/resumed connections. Enrollment and deletion serialize on the account
   row. Roles remain unchanged.
 

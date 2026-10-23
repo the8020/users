@@ -220,17 +220,35 @@ export async function validateSession(
 // never invoke this hook automatically.
 export async function authenticate(
   request: Request,
-  claims: TokenClaims,
+  input: { method: "token"; claims: TokenClaims; fromCookie?: boolean } | {
+    method: "password";
+    username: string;
+  } | { method: "certificate"; fingerprint: string },
   policy: UnauthenticatedPolicy,
-): Promise<Response | undefined> {
-  if (await validateSession(claims) !== undefined) return undefined;
+): Promise<Response | { userId: string; username: string }> {
+  const user = input.method === "token"
+    ? await validateSession(input.claims)
+    : input.method === "password"
+    ? await authenticatePassword(
+      input.username,
+      kernel.execution.secret("password"),
+    )
+    : input.method === "certificate"
+    ? await authenticateCertificate(input.fingerprint)
+    : undefined;
+  if (user !== undefined) return { userId: user.id, username: user.username };
   const headers = new Headers({ "cache-control": "no-store" });
-  if (!request.headers.has(tokenHeader) && request.headers.has("cookie")) {
+  if (
+    input.method === "token" && input.fromCookie === true
+  ) {
     headers.set("set-cookie", await clearCookie(request));
   }
   if (policy.action === "redirect") {
     headers.set("location", policy.redirect_url!);
     return new Response(null, { status: policy.status, headers });
+  }
+  if (policy.status === 401) {
+    headers.set("www-authenticate", 'Basic realm="80|20", charset="UTF-8"');
   }
   headers.set("content-type", "text/plain; charset=utf-8");
   return new Response(policy.message ?? "Authentication required", {

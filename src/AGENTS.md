@@ -28,10 +28,13 @@ Parent DOX: [users DOX](../AGENTS.md).
   profile schema and updates details/timestamp without changing authentication
   version or sessions. Both administration and self-service reuse `setPassword`
   for hashing and session invalidation.
-- Token account/session policy runs in the existing target Worker; the kernel
-  owns JWT signing and verification. Native password transports, including HTTP
-  Basic for all authenticated services, reuse `authenticatePassword` through the
-  existing authenticate program. Basic does not create a session.
+- HTTP token, Basic, and certificate policy run directly in the existing target
+  Worker through `authenticate`. The hook calls the shared account/session
+  functions, consumes password via `kernel.execution.secret`, and returns a
+  canonical user or rejection Response. Cookie provenance accompanies verified
+  token claims; raw credentials never reach handlers. Basic/certificate checks
+  create no session. Native transports retain the ordinary authenticate program;
+  Go retains JWT and TLS cryptographic/transport validation.
 - This package alone validates session representation: `sid` is 32 lowercase hex
   characters and `ver` is a positive safe integer, checked before database
   access. The kernel treats session fields as opaque, while retaining signed
