@@ -21,10 +21,11 @@ const passwordSet = sql<number>`CASE WHEN ${
 } = '' THEN 0 ELSE 1 END`.as("passwordSet");
 
 function validateUsername(username: string): void {
-  if (!/^[a-z0-9]{3,32}$/.test(username)) {
+  if (!/^[a-z0-9][a-z0-9_-]{1,30}[a-z0-9]$/.test(username)) {
     throw new AdminCommandError({
       code: "invalid_arguments",
-      message: "username must contain 3-32 lowercase letters or digits",
+      message:
+        "username must contain 3-32 lowercase letters, digits, _ or -, starting and ending with a letter or digit",
     });
   }
 }

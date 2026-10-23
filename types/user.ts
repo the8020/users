@@ -41,7 +41,7 @@ export const userSummary = userProfile.extend({
 export const newUsername = field(username, {
   label: "Username",
   description:
-    "Use 3–32 lowercase letters or digits for the new account's username.",
+    "Use 3–32 lowercase letters, digits, _ or - for the new account's username; start and end with a letter or digit.",
   valueHelp: undefined,
   open: undefined,
 });

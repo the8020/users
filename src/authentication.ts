@@ -76,7 +76,7 @@ export function clearCookie(request: Request): Promise<string> {
 export async function eligibleUser(
   username: string,
 ): Promise<User | undefined> {
-  if (!/^[a-z0-9]{3,32}$/.test(username)) return undefined;
+  if (!/^[a-z0-9][a-z0-9_-]{1,30}[a-z0-9]$/.test(username)) return undefined;
   const account = await Users.select([
     Users.username,
     Users.enabled,
@@ -107,7 +107,7 @@ export async function authenticateCertificate(
 }
 
 async function passwordAccount(username: string, password: string) {
-  const account = /^[a-z0-9]{3,32}$/.test(username)
+  const account = /^[a-z0-9][a-z0-9_-]{1,30}[a-z0-9]$/.test(username)
     ? await Users.selectAll().where(Users.username, "=", username)
       .executeTakeFirst()
     : undefined;
@@ -192,7 +192,7 @@ export async function validateSession(
 ): Promise<User | undefined> {
   if (
     typeof claims.sub !== "string" ||
-    !/^user:[a-z0-9]{3,32}$/.test(claims.sub) ||
+    !/^user:[a-z0-9][a-z0-9_-]{1,30}[a-z0-9]$/.test(claims.sub) ||
     typeof claims.sid !== "string" || !/^[a-f0-9]{32}$/.test(claims.sid) ||
     !Number.isSafeInteger(claims.ver) || Number(claims.ver) < 1
   ) return undefined;
