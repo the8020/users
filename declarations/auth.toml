@@ -3,5 +3,6 @@
 "the8020.users.user.delete" = "Delete an account and its authentication sessions, then publish users.deleted; value is username."
 "the8020.users.user.edit" = "Change account details or enablement; value is username. Authenticated users may edit their own profile."
 "the8020.users.user.password" = "Replace or remove a password; value is username. Authenticated users may replace their own password."
+"the8020.users.passwords.reset" = "Reset every platform password and sign-in, enabling one existing recovery account; value is *."
 "the8020.users.user.sessions" = "End authentication sign-ins; value is username. Users may end their own sign-ins."
 "the8020.users.user.certificates" = "List, enroll, or remove public client certificates; value is username. Authenticated users may manage their own certificates."

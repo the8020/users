@@ -28,6 +28,10 @@ Parent DOX: [users DOX](../AGENTS.md).
 - `my-account-status` is the data program of the Home My account tile: empty
   unless the signed-in user's first-expiring certificate has under 30 days left.
 
+- `reset-passwords` requires exactly `<recovery-username> --confirm` and the
+  existing execution-local `password` secure input. It delegates the complete
+  transaction to `src/admin.ts`; no startup migration or plaintext argv exists.
+
 # Work Guidance
 
 # Verification

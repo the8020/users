@@ -13,6 +13,11 @@ Deno.test("account reads require view except for the user's own account", async 
       permissions: { "the8020.users.user.view": "bob" },
     });
     fixture.asUser("alice");
+    await assertRejects(
+      () => users.resetPasswords("alice", "synthetic-reset-input"),
+      Error,
+      "Permission denied",
+    );
     assertEquals(
       (await users.list()).users.map((row) => row.username).sort(),
       ["alice", "bob"],

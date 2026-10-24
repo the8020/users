@@ -1,5 +1,5 @@
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
-import { X509Certificate } from "node:crypto";
+import { createHash, X509Certificate } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import {
   kernelDatabaseBackendSymbol,
@@ -81,20 +81,77 @@ Deno.test("certificate validity counts whole remaining days with severity", () =
   assertEquals(validity(-3), [0, "danger", "Expired", true]);
 });
 
-Deno.test("password hashing remains Argon2id with independent salts", async () => {
-  // Fixed PHC produced by the former Go argon2.IDKey implementation.
-  const legacy =
-    "$argon2id$v=19$m=65536,t=3,p=1$b2xkLWdvLXNhbHQtdmFsdWU$FwDFbn9RYQgC2JKPKD8Cw/NFXG9yWvYmaWifpGaXRvo";
-  assert(await verifyPassword(legacy, "legacy-password"));
-  const hash = await hashPassword("correct horse");
-  assert(hash.startsWith("$argon2id$v=19$m=65536,t=3,p=1$"));
-  assert(await verifyPassword(hash, "correct horse"));
-  assertEquals(await verifyPassword(hash, "wrong"), false);
-  assertEquals(await verifyPassword(undefined, "wrong"), false);
-  assertEquals(await verifyPassword("malformed", "wrong"), false);
-  await assertRejects(() => hashPassword(""), TypeError);
-  assert(hash !== await hashPassword("correct horse"));
+Deno.test("password records bind exact usernames and reject obsolete or malformed records", async () => {
+  let digestCalls = 0;
+  globals[kernelInvokeSymbol] = (
+    _operation: string,
+    input: Record<string, unknown>,
+  ) => {
+    assertEquals(input.operation, "crypto.password.digest");
+    digestCalls++;
+    return Promise.resolve({
+      success: true,
+      result: {
+        digest: fixtureDigest(input.input as Record<string, unknown>),
+      },
+    });
+  };
+  try {
+    const password = "unicode-🔐\0exact";
+    const hash = await hashPassword("alice", password);
+    assertEquals(digestCalls, 1);
+    assert(hash.startsWith("$8020-hmac-sha256$v=1$"));
+    assert(await verifyPassword("alice", hash, password));
+    assertEquals(digestCalls, 2);
+    for (
+      const bad of ["wrong", "", "x".repeat(1_048_577), "🔐".repeat(262145)]
+    ) {
+      assertEquals(await verifyPassword("alice", hash, bad), false);
+    }
+    assertEquals(digestCalls, 3);
+    for (
+      const record of [
+        undefined,
+        "",
+        "malformed",
+        "$argon2id$v=19$m=65536,t=3,p=1$old$hash",
+        hash + "$extra",
+        hash.replace("v=1", "v=2"),
+      ]
+    ) {
+      assertEquals(await verifyPassword("alice", record, password), false);
+    }
+    assertEquals(digestCalls, 3);
+    assertEquals(await verifyPassword("other", hash, password), false);
+    assertEquals(await verifyPassword("Alice", hash, password), false);
+    await assertRejects(() => hashPassword("Alice", password), TypeError);
+    await assertRejects(() => hashPassword("alice", ""), TypeError);
+    assert(hash !== await hashPassword("alice", password));
+    assertEquals(digestCalls, 5);
+    globals[kernelInvokeSymbol] = () =>
+      Promise.resolve({ success: true, result: { digest: "AA==" } });
+    await assertRejects(
+      () => verifyPassword("alice", hash, password),
+      Error,
+      "invalid password digest",
+    );
+    globals[kernelInvokeSymbol] = () =>
+      Promise.reject(new Error("digest unavailable"));
+    await assertRejects(
+      () => hashPassword("alice", password),
+      Error,
+      "digest unavailable",
+    );
+  } finally {
+    delete globals[kernelInvokeSymbol];
+  }
 });
+
+function fixtureDigest(input: Record<string, unknown>): string {
+  return createHash("sha256").update(
+    JSON.stringify([input.user_id, input.password, input.nonce]),
+  ).digest("base64");
+}
 
 Deno.test("users own login, session eligibility, revocation, and stale-cookie logout", async () => {
   const database = new DatabaseSync(":memory:");
@@ -159,6 +216,12 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
         return Promise.resolve({
           success: true,
           result: { id: "event", listeners: 0 },
+        });
+      }
+      if (input.operation === "crypto.password.digest") {
+        return Promise.resolve({
+          success: true,
+          result: { digest: fixtureDigest(data) },
         });
       }
       if (input.operation === "crypto.token.sign") {
@@ -591,7 +654,64 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     );
     await assertRejects(() => admin.remove("alice"));
     assertEquals(deletedUsers.length, 1);
+    testUsername = "system";
+    await admin.add("recovery", "before-reset");
+    await admin.add("resetother", "before-reset");
+    const beforeRecoveryReset = await users.login(request, {
+      username: "recovery",
+      password: "before-reset",
+    });
+    const recoveryClaims = tokens.get(beforeRecoveryReset.token!)!;
+    const resetCommand =
+      (await import("../programs/reset-passwords/program.ts")).default;
+    hookPassword = "recovered-password";
+    await assertRejects(() =>
+      Promise.resolve().then(() => resetCommand("recovery"))
+    );
+    await assertRejects(() =>
+      admin.resetPasswords("missing", "recovered-password")
+    );
+    assert(
+      (await users.login(request, {
+        username: "resetother",
+        password: "before-reset",
+      })).authenticated,
+    );
+    await resetCommand("recovery", "--confirm");
+    assertEquals(await users.validateSession(recoveryClaims), undefined);
+    assertEquals(
+      await users.authenticatePassword("resetother", "before-reset"),
+      undefined,
+    );
+    assertEquals(
+      (await users.authenticatePassword("recovery", "recovered-password"))
+        ?.username,
+      "recovery",
+    );
+    assertEquals(
+      await users.authenticatePassword("recovery", "before-reset"),
+      undefined,
+    );
+    // A repeated CBus request is another explicit reset and preserves recovery access.
+    await resetCommand("recovery", "--confirm");
+    assertEquals(
+      (await users.authenticatePassword("recovery", "recovered-password"))
+        ?.username,
+      "recovery",
+    );
+    assertEquals(
+      database.prepare("SELECT count(*) AS n FROM the8020__users__sessions")
+        .get()!.n,
+      0,
+    );
     database.exec("DROP TABLE the8020__users__sessions");
+    hookPassword = "uncommitted-recovery-password";
+    await assertRejects(() => resetCommand("recovery", "--confirm"));
+    assertEquals(
+      (await users.authenticatePassword("recovery", "recovered-password"))
+        ?.username,
+      "recovery",
+    );
     const failedLogout = await users.logout(validRequest);
     assertEquals(failedLogout.status, 503);
     assert(failedLogout.headers.get("set-cookie")!.includes("Max-Age=0"));

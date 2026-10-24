@@ -107,7 +107,9 @@ export async function add(username: string, password = "", fullName = "") {
   validateUsername(username);
   await requirePermission("the8020.users.user.create", username);
   const profile = userProfile.parse({ fullName });
-  const passwordHash = password === "" ? "" : await hashPassword(password);
+  const passwordHash = password === ""
+    ? ""
+    : await hashPassword(username, password);
   const now = new Date();
   const result = await Users.insert({
     username,
@@ -281,7 +283,9 @@ export async function setPassword(username: string, password: string) {
   ) {
     await requirePermission("the8020.users.user.password", username);
   }
-  const passwordHash = password === "" ? "" : await hashPassword(password);
+  const passwordHash = password === ""
+    ? ""
+    : await hashPassword(username, password);
   return await update(username, true, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({
@@ -292,6 +296,36 @@ export async function setPassword(username: string, password: string) {
       .where(Users.username, "=", username)
       .executeTakeFirst();
     return result.numUpdatedRows;
+  });
+}
+
+/** Explicit incompatible-credential transition; CBus remains usable without login. */
+export async function resetPasswords(
+  recoveryUsername: string,
+  password: string,
+) {
+  validateUsername(recoveryUsername);
+  await requirePermission("the8020.users.passwords.reset", "*");
+  const passwordHash = await hashPassword(recoveryUsername, password);
+  return await db.transaction().execute(async (transaction) => {
+    const now = new Date();
+    // Lock all affected accounts before deleting sessions, as ordinary mutations do.
+    await transaction.updateTable(Users.table).set({
+      passwordHash: "",
+      authVersion: sql<number>`${sql.ref(Users.authVersion)} + 1`,
+      updatedAt: now,
+    }).execute();
+    const recovery = await transaction.updateTable(Users.table)
+      .set({ passwordHash, enabled: true })
+      .where(Users.username, "=", recoveryUsername).executeTakeFirst();
+    if (recovery.numUpdatedRows === 0n) {
+      throw new AdminCommandError({
+        code: "not_found",
+        message: "Recovery account was not found",
+      });
+    }
+    await transaction.deleteFrom(Sessions.table).execute();
+    return { reset: true, recovery_user: recoveryUsername };
   });
 }
 

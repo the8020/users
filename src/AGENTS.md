@@ -19,7 +19,7 @@ Parent DOX: [users DOX](../AGENTS.md).
   own cleanup through their event subscriptions; never call their cleanup here.
   An emission error reports the committed deletion explicitly.
 
-- Use salted Argon2id PHC hashes and bounded constant-query account/session
+- Use versioned HMAC password records and bounded constant-query account/session
   listings without loading hashes for summaries.
 - `admin.user(username)` supplies one non-secret account summary to both
   mutations and UUI. `listSessions(username?)` filters at the database when
@@ -61,6 +61,43 @@ Parent DOX: [users DOX](../AGENTS.md).
 - Enrollment accepts PEM text, PEM file bytes, and DER file bytes at the same
   owner boundary; all forms reject extra certificates and private-key content.
 
+## Password construction
+
+- `hashPassword(username, password)` and
+  `verifyPassword(username, record,
+  password)` share the same helper for
+  creation, replacement, login and Basic. Usernames are exact 3–32 lowercase
+  ASCII identifiers under existing account rules. No case folding or rename API
+  exists; copying a verifier to a renamed account fails and requires password
+  replacement. Passwords are exact UTF-8 (including NUL), 1–1048576 bytes,
+  without normalization.
+- One `kernel.crypto.passwordDigest(username, passwordBytes, nonce)` call
+  returns the final 32-byte digest under the invocation's trusted credential
+  namespace. Platform callers must use `package:the8020/users`; service
+  declarations establish sharing, never individual calls. All key derivation and
+  HMAC hashing stay in the kernel; this package generates a random 16-byte
+  public nonce and owns records and constant-time comparison. The native
+  construction is documented in
+  [kernel auth](../../kernel/kernel/auth/AGENTS.md). Record syntax is
+  `$8020-hmac-sha256$v=1$<32 lowercase nonce hex>$<64 lowercase tag hex>`.
+  Verify only this exact version/shape with Node `timingSafeEqual`.
+- Unknown, malformed and obsolete records reject cheaply; no dummy KDF exists.
+  Typed bridge failures propagate as unavailable authentication, not a
+  successful or cached result. Password byte buffers are cleared after use;
+  immutable JavaScript/transport strings cannot be guaranteed erased.
+  Credentials never enter diagnostics; services receive no keys.
+- The accepted model protects stolen verifier databases only while the master,
+  native keys and digest oracle stay inaccessible. It supplies no memory-hard
+  defense after their compromise. Existing trusted-package administrative
+  authority is unchanged; namespace binding is not a new sandbox for malicious
+  installed code with broader kernel capabilities.
+- `resetPasswords` requires `the8020.users.passwords.reset` for `*`, validates
+  and derives recovery credentials before a single database transaction, locks
+  and versions all platform accounts, clears passwords/sessions, then enables
+  the existing recovery user. Any failure rolls back all writes. Retrying
+  repeats the explicit reset; it also clears passwords issued since the prior
+  success.
+
 # Work Guidance
 
 - Apply account policy through this shared implementation across HTTP, command,
@@ -71,6 +108,13 @@ Parent DOX: [users DOX](../AGENTS.md).
 # Verification
 
 - From the repository root, run `deno task check` and `deno task test`.
+
+- With pinned Deno on PATH and sibling package sources, run kernel
+  `go test ./kernel/runtime/callback -run TestPasswordUsersWorkerAndRecovery -v`.
+  `password_runtime_fixture.ts` exercises real Worker/Unix callback/native
+  signer/SQLite helpers, Basic target policy, custom stores, namespace spoof
+  rejection and reset after process/key reload. It reports bounded helper and
+  Basic-target timing/timer samples; it is not installed/customer latency.
 
 # Child DOX Index
 

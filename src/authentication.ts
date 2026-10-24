@@ -111,7 +111,11 @@ async function passwordAccount(username: string, password: string) {
     ? await Users.selectAll().where(Users.username, "=", username)
       .executeTakeFirst()
     : undefined;
-  const matches = await verifyPassword(account?.passwordHash, password);
+  const matches = await verifyPassword(
+    username,
+    account?.passwordHash,
+    password,
+  );
   return matches && account?.enabled ? account : undefined;
 }
 

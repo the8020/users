@@ -127,8 +127,8 @@ below.
   and enrolled client certificates.
 - [types/AGENTS.md](types/AGENTS.md): Define reusable user fields, structures,
   and paged value help for database and UUI consumers.
-- [vendor/AGENTS.md](vendor/AGENTS.md): Pin and bundle Argon2 and X.509 parsing
-  with original types and upstream licenses.
+- [vendor/AGENTS.md](vendor/AGENTS.md): Pin and bundle X.509 parsing with
+  original types and upstream licenses.
 
 # Purpose
 
@@ -149,10 +149,10 @@ below.
   lists and details, full-name and password editing, enrolled certificates, and
   sign-in administration. My account reuses these forms for the authenticated
   user's own details.
-- Own account/password rules, Argon2id hashing and verification, login/logout,
-  session issuance/validation/revocation, and application cookie construction.
-  Do not own UUI application sessions, private signing keys, kernel principals,
-  sandbox lifecycle, or database credentials.
+- Own account/password rules, native digest calls and constant-time
+  verification, login/logout, session issuance/validation/revocation, and
+  application cookie construction. Do not own UUI application sessions, private
+  signing keys, kernel principals, sandbox lifecycle, or database credentials.
 
 # Local Contracts
 
@@ -179,9 +179,10 @@ below.
   bidirectional navigation. `declarations/auth.toml` documents this package's
   permission keys without enforcing a registry.
 
-- Passwords are stored only as Argon2id PHC hashes with random salts. Signed
-  JWTs contain an opaque session ID; no session secret/hash or token is stored
-  in the sessions table. Credentials never enter diagnostics.
+- Passwords are stored only as versioned keyed HMAC records with random public
+  salts; keys never leave the kernel. Signed JWTs contain an opaque session ID;
+  no session secret/hash or token is stored in the sessions table. Credentials
+  never enter diagnostics.
 - Authentication-session cleanup is indexed by expiry and safe across nodes.
 - User and authentication-session listings use a bounded constant number of
   database queries; they never issue one query per returned row. Active-session
@@ -257,14 +258,23 @@ below.
   authenticated kernel-peer forwarding. Public HTTP rejects them, including
   loopback HTTP and forged internal headers. Transport integrity belongs to the
   kernel; account/session eligibility still runs in the target Worker.
-- Password defaults are Argon2id v19, 64 MiB, three rounds, one lane, random
-  16-byte salt, and 32-byte output. Use pinned noble-hashes; no kernel password
-  API or authentication settings remain. Unknown accounts still take the KDF
-  path.
-- `vendor/` owns the Argon2 pin, committed external bundle, and original types
-  consumed by `src/password.ts`. `deno task bundle` regenerates this dependency
-  before publication; password policy and application modules remain ordinary
-  source.
+- Password records use the v1 HMAC-SHA-256 construction documented in
+  [src/AGENTS.md](src/AGENTS.md), with one native digest invocation in the
+  `package:the8020/users` credential namespace. Usernames remain exact lowercase
+  identifiers; rename requires a new password. No Argon2 fallback, credential
+  cache or expensive unknown-user work exists. Authentication stays here.
+- This accepts database-only theft protection, not a memory-hard work factor:
+  obtaining a kernel key or usable digest oracle permits fast password guessing.
+  Backups need the original kernel master key, stored separately. Key
+  replacement/loss requires password resets as well as existing token and
+  encryption recovery. All nodes must provision the same master.
+- [CBus recovery](cbus/AGENTS.md) owns the explicit incompatible-credential
+  transition. `users.reset-passwords` atomically removes platform passwords and
+  sessions and enables one existing recovery account with a securely supplied
+  password. Roles, certificates and custom stores remain untouched; no reset
+  runs automatically on activation/startup.
+- `vendor/` owns the X.509 bundle and licenses; passwords use platform crypto.
+
 - Explicit public logout verifies presented credentials through the kernel
   bridge when needed, revokes their session when valid, and always clears the
   cookie for absent/invalid/expired tokens. Revocation failure returns an error

@@ -2,21 +2,18 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 # Purpose
 
-- Ship package-owned Argon2 and X.509 dependencies as separate bundles.
+- Ship the package-owned X.509 dependency bundle.
 
 # Ownership
 
-- `argon2.ts` pins the noble-hashes Argon2 entrypoint and supplies original
-  types through `@deno-types`. Its generated `.js` bundle and upstream license
-  notice ship with this package.
 - `x509.ts` pins Peculiar X.509, its required reflection polyfill, and the ASN.1
   decoder used to reject trailing input. `x509.LICENSE` retains licenses for
   the bundled dependency closure. `src/certificates.ts` owns enrollment policy.
 
 # Local Contracts
 
-- `../src/password.ts` consumes this bundle. Password policy stays in ordinary
-  application source; bundle only the external library.
+- `../src/certificates.ts` consumes this bundle. Passwords use platform crypto;
+  bundle only the external certificate library.
 - Regenerate and commit JavaScript when changing the pin. Preserve upstream
   exports and names; do not edit generated files.
 
