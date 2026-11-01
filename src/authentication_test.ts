@@ -502,7 +502,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     await assertRejects(() =>
       admin.updateDetails("alice", {
         fullName: "Alice Updated",
-        language: "de",
+        language: "eo",
       })
     );
     await admin.updateDetails("alice", {
