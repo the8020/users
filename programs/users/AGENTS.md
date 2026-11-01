@@ -18,6 +18,9 @@ Parent DOX: [users/programs DOX](../AGENTS.md).
 
 # Local Contracts
 
+- Edit details includes account language for both administration and My account;
+  changes take effect in future sessions and calls.
+
 - Account and certificate creation, list refresh, and Sign out all live in their
   owning list toolbars. Detail and confirmation actions remain with their forms.
 

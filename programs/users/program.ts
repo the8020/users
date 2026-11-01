@@ -1,3 +1,5 @@
+import { text as localizedText } from "/p/the8020/i18n/mod.ts";
+import { msg } from "/p/the8020/users/i18n/messages.ts";
 import {
   BACK_EVENT,
   callScreen,
@@ -36,9 +38,10 @@ const Account = UserRow.pick({
 }).extend({
   username: field(username, { readOnly: true }),
   certificate: field(z.string(), {
-    label: "Certificate",
-    description:
-      "The enrolled certificate that expires first. Request a new certificate before it expires.",
+    label: msg("program.certificate"),
+    description: msg(
+      "program.the_enrolled_certificate_that_expires_first_request",
+    ),
   }),
 });
 const SignIn = authenticationSession.extend({
@@ -58,10 +61,10 @@ function summary(user: User): z.infer<typeof UserRow> {
     fullName: user.full_name,
     enabled: user.enabled,
     signIn: !user.enabled
-      ? "Disabled"
+      ? localizedText(msg("program.disabled"))
       : user.has_password
-      ? "Allowed"
-      : "No password",
+      ? localizedText(msg("program.allowed"))
+      : localizedText(msg("program.no_password")),
     activeSessions: user.active_authentication_session_count,
   };
 }
@@ -76,7 +79,7 @@ export default async function usersProgram(
     model.data.users = (await accounts.list()).users.map(summary);
     const event = await callScreen({
       id: "users",
-      title: "Users",
+      title: msg("program.users"),
       schema: UserList,
       model,
       layout: {
@@ -84,8 +87,8 @@ export default async function usersProgram(
         id: "users",
         root: {
           toolbar: [
-            { id: "add", label: "Add user", kind: "primary" },
-            { id: "refresh", label: "Refresh" },
+            { id: "add", label: msg("program.add_user"), kind: "primary" },
+            { id: "refresh", label: msg("certificates.refresh") },
           ],
           type: "list",
           bind: "users",
@@ -132,7 +135,12 @@ export async function userDetail(
     ) {
       warned = true;
       sendMessage(
-        `Your certificate ${certificate}. Request a new certificate.`,
+        localizedText(
+          msg(
+            "program.your_certificate_certificate_request_a_new_certificate",
+            { certificate: certificate },
+          ),
+        ),
         "warning",
       );
     }
@@ -142,7 +150,9 @@ export async function userDetail(
     if (certificate) details.push("certificate");
     const event = await callScreen({
       id: selfService ? "my-account" : "user-detail",
-      title: selfService ? "My account" : `User ${name}`,
+      title: selfService
+        ? localizedText(msg("program.my_account"))
+        : localizedText(msg("ui.user_name", { name })),
       schema: Account,
       model,
       controls: [
@@ -179,27 +189,31 @@ export async function userDetail(
         },
       },
       actions: [
-        { id: "sign-ins", label: "Sign-ins" },
-        { id: "certificates", label: "Certificates" },
-        { id: "ui-sessions", label: "Open sessions" },
+        { id: "sign-ins", label: msg("program.sign_ins") },
+        { id: "certificates", label: msg("program.certificates") },
+        { id: "ui-sessions", label: msg("program.open_sessions") },
         selfService
-          ? { id: "my-roles", label: "My roles" }
-          : { id: "roles", label: "Roles" },
+          ? { id: "my-roles", label: msg("program.my_roles") }
+          : { id: "roles", label: msg("program.roles") },
       ],
       header: {
         actions: [
-          { id: "edit", label: "Edit details", kind: "primary" },
+          { id: "edit", label: msg("program.edit_details"), kind: "primary" },
           {
             id: "password",
-            label: user.has_password ? "Change password" : "Set password",
+            label: user.has_password
+              ? localizedText(msg("program.change_password"))
+              : localizedText(msg("program.set_password")),
           },
           ...(!selfService
             ? [{
               id: "enabled",
-              label: user.enabled ? "Disable user" : "Enable user",
-            }, { id: "advanced", label: "Advanced" }]
+              label: user.enabled
+                ? localizedText(msg("program.disable_user"))
+                : localizedText(msg("program.enable_user")),
+            }, { id: "advanced", label: msg("program.advanced") }]
             : []),
-          { id: "refresh", label: "Refresh" },
+          { id: "refresh", label: msg("certificates.refresh") },
         ],
       },
     });
@@ -215,14 +229,20 @@ export async function userDetail(
         if (
           !user.enabled ||
           await confirm(
-            `Disable ${name}?`,
-            "They will be signed out and cannot sign in until enabled again.",
-            "Disable user",
+            localizedText(msg("program.disable_name", { name: name })),
+            localizedText(
+              msg(
+                "ui.they_will_be_signed_out_and_cannot_sign_in_until_enabled_again",
+              ),
+            ),
+            localizedText(msg("ui.disable_user")),
           )
         ) {
           await (user.enabled ? accounts.disable(name) : accounts.enable(name));
           sendMessage(
-            user.enabled ? "User disabled" : "User enabled",
+            user.enabled
+              ? localizedText(msg("program.user_disabled"))
+              : localizedText(msg("program.user_enabled")),
             "success",
           );
         }
@@ -261,23 +281,30 @@ export async function userDetail(
 }
 
 async function editDetails(user: User): Promise<void> {
-  const model = new Model({ fullName: user.full_name });
+  const model = new Model({
+    fullName: user.full_name,
+    language: user.language,
+  });
   while (true) {
     const event = await callScreen({
       id: "user-edit",
-      title: "Edit details",
+      title: msg("program.edit_details"),
       schema: userProfile,
       model,
-      controls: [{ bind: "fullName", length: "long" }],
+      controls: [{ bind: "fullName", length: "long" }, { bind: "language" }],
       header: {
-        actions: [{ id: "save", label: "Save details", kind: "primary" }],
+        actions: [{
+          id: "save",
+          label: msg("program.save_details"),
+          kind: "primary",
+        }],
       },
     });
     if (event.action === BACK_EVENT) return;
     if (event.action !== "save") continue;
     try {
       await accounts.updateDetails(user.username, model.data);
-      sendMessage("User details saved", "success");
+      sendMessage(localizedText(msg("program.user_details_saved")), "success");
       return;
     } catch (error) {
       showError(error);
@@ -297,14 +324,18 @@ async function createUser(): Promise<string | undefined> {
   while (true) {
     const event = await callScreen({
       id: "user-add",
-      title: "Add user",
+      title: msg("program.add_user"),
       schema: Screen,
       model,
       controls: [{ bind: "username" }, { bind: "fullName" }, {
         bind: "password",
       }],
       header: {
-        actions: [{ id: "create", label: "Create user", kind: "primary" }],
+        actions: [{
+          id: "create",
+          label: msg("program.create_user"),
+          kind: "primary",
+        }],
       },
     });
     if (event.action === BACK_EVENT) {
@@ -318,7 +349,12 @@ async function createUser(): Promise<string | undefined> {
         model.data.password,
         model.data.fullName,
       );
-      sendMessage(`Created ${model.data.username}`, "success");
+      sendMessage(
+        localizedText(
+          msg("program.created_value1", { value1: model.data.username }),
+        ),
+        "success",
+      );
       return model.data.username;
     } catch (error) {
       showError(error);
@@ -343,18 +379,18 @@ async function changePassword(user: User, allowRemoval = true): Promise<void> {
   while (true) {
     const event = await callScreen({
       id: "user-password",
-      title: `Password for ${user.username}`,
+      title: msg("program.password_for_value1", { value1: user.username }),
       schema: Screen,
       model,
-      description: "Changing the password signs out existing sign-ins.",
+      description: msg("program.changing_the_password_signs_out_existing_sign"),
       controls: [{ bind: "password" }, { bind: "confirmation" }],
       header: {
         actions: [
-          { id: "save", label: "Save password", kind: "primary" },
+          { id: "save", label: msg("program.save_password"), kind: "primary" },
           ...(allowRemoval && user.has_password
             ? [{
               id: "remove",
-              label: "Remove password",
+              label: msg("program.remove_password"),
               kind: "danger" as const,
             }]
             : []),
@@ -369,22 +405,32 @@ async function changePassword(user: User, allowRemoval = true): Promise<void> {
       if (allowRemoval && event.action === "remove") {
         if (
           !await confirm(
-            `Remove the password for ${user.username}?`,
-            "Password sign-ins will end. Enrolled certificates remain usable while the account is enabled.",
-            "Remove password",
+            localizedText(
+              msg("program.remove_the_password_for_value1", {
+                value1: user.username,
+              }),
+            ),
+            localizedText(
+              msg(
+                "ui.password_sign_ins_will_end_enrolled_certificates_remain_usable_while_the_account_is_e",
+              ),
+            ),
+            localizedText(msg("ui.remove_password")),
           )
         ) continue;
         await accounts.setPassword(user.username, "");
-        sendMessage("Password removed", "success");
+        sendMessage(localizedText(msg("program.password_removed")), "success");
         return;
       }
       if (event.action !== "save") continue;
-      if (!model.data.password) throw new Error("Enter a new password.");
+      if (!model.data.password) {
+        throw new Error(localizedText(msg("ui.enter_a_new_password")));
+      }
       if (model.data.password !== model.data.confirmation) {
-        throw new Error("The passwords do not match.");
+        throw new Error(localizedText(msg("ui.the_passwords_do_not_match")));
       }
       await accounts.setPassword(user.username, model.data.password);
-      sendMessage("Password updated", "success");
+      sendMessage(localizedText(msg("program.password_updated")), "success");
       return;
     } catch (error) {
       showError(error);
@@ -405,11 +451,13 @@ async function signIns(name: string): Promise<void> {
       transport: session.transport,
       created: session.created_at,
       expires: session.expires_at,
-      status: session.valid ? "Active" : "Ended",
+      status: session.valid
+        ? localizedText(msg("program.active"))
+        : localizedText(msg("program.ended")),
     }));
     const event = await callScreen({
       id: "user-sign-ins",
-      title: `Sign-ins for ${name}`,
+      title: msg("program.sign_ins_for_name", { name: name }),
       schema: SignIns,
       model,
       layout: {
@@ -417,8 +465,12 @@ async function signIns(name: string): Promise<void> {
         id: "user-sign-ins",
         root: {
           toolbar: [
-            { id: "sign-out", label: "Sign out all", kind: "danger" },
-            { id: "refresh", label: "Refresh" },
+            {
+              id: "sign-out",
+              label: msg("program.sign_out_all"),
+              kind: "danger",
+            },
+            { id: "refresh", label: msg("certificates.refresh") },
           ],
           type: "list",
           bind: "sessions",
@@ -431,13 +483,17 @@ async function signIns(name: string): Promise<void> {
     if (
       event.action === "sign-out" &&
       await confirm(
-        `Sign out ${name}?`,
-        "All current sign-ins will end. They can sign in again with their password.",
-        "Sign out all",
+        localizedText(msg("program.sign_out_name", { name: name })),
+        localizedText(
+          msg(
+            "ui.all_current_sign_ins_will_end_they_can_sign_in_again_with_their_password",
+          ),
+        ),
+        localizedText(msg("ui.sign_out_all")),
       )
     ) {
       await accounts.invalidateSessions(name);
-      sendMessage("All sign-ins ended", "success");
+      sendMessage(localizedText(msg("program.all_sign_ins_ended")), "success");
     }
     if (event.action === "select" && typeof event.value === "string") {
       const session = sessions.find((item) => item.session_id === event.value);
@@ -448,7 +504,7 @@ async function signIns(name: string): Promise<void> {
       const end = await presentModal(async () => {
         const event = await callScreen({
           id: "user-sign-in",
-          title: `Sign-in for ${name}`,
+          title: msg("program.sign_in_for_name", { name: name }),
           schema: SignIn.pick({ created: true, expires: true, status: true }),
           model: new Model(selected),
           controls: ["created", "expires", "status"].map((bind) => ({
@@ -457,7 +513,11 @@ async function signIns(name: string): Promise<void> {
           })),
           header: {
             actions: session.valid
-              ? [{ id: "sign-out", label: "Sign out", kind: "danger" }]
+              ? [{
+                id: "sign-out",
+                label: msg("program.sign_out"),
+                kind: "danger",
+              }]
               : [],
           },
         });
@@ -465,7 +525,7 @@ async function signIns(name: string): Promise<void> {
       });
       if (end) {
         await accounts.revokeSession(session.session_id);
-        sendMessage("Sign-in ended", "success");
+        sendMessage(localizedText(msg("program.sign_in_ended")), "success");
       }
     }
   }
@@ -485,27 +545,31 @@ async function advanced(user: User): Promise<boolean> {
   while (true) {
     const event = await callScreen({
       id: "user-advanced",
-      title: `Advanced · ${user.username}`,
+      title: msg("program.advanced_value1", { value1: user.username }),
       schema: Screen,
       model,
       controls: [{ bind: "created" }, { bind: "updated" }, {
         bind: "authVersion",
       }],
       header: {
-        actions: [{ id: "delete", label: "Delete user", kind: "danger" }],
+        actions: [{
+          id: "delete",
+          label: msg("program.delete_user"),
+          kind: "danger",
+        }],
       },
     });
     if (event.action === BACK_EVENT) return false;
     if (
       event.action === "delete" &&
       await confirm(
-        `Delete ${user.username}?`,
-        "The account and its sign-ins will be removed.",
-        "Delete user",
+        localizedText(msg("program.delete_value1", { value1: user.username })),
+        localizedText(msg("ui.the_account_and_its_sign_ins_will_be_removed")),
+        localizedText(msg("ui.delete_user")),
       )
     ) {
       await accounts.remove(user.username);
-      sendMessage("User deleted", "success");
+      sendMessage(localizedText(msg("program.user_deleted")), "success");
       return true;
     }
   }
@@ -521,7 +585,7 @@ function confirm(
     title,
     message,
     confirm: label,
-    cancel: "Cancel",
+    cancel: msg("program.cancel"),
   });
 }
 
@@ -529,7 +593,7 @@ function showError(error: unknown): void {
   sendMessage(
     error instanceof Error
       ? error.message
-      : "The account could not be updated.",
+      : localizedText(msg("program.the_account_could_not_be_updated")),
     "error",
   );
 }

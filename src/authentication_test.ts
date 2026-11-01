@@ -162,7 +162,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
   database.exec(`CREATE TABLE the8020__users__users (
     username TEXT PRIMARY KEY, passwordHash TEXT NOT NULL, enabled INTEGER NOT NULL,
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL,
-    fullName TEXT NOT NULL DEFAULT '');
+    fullName TEXT NOT NULL DEFAULT '', language TEXT);
     CREATE TABLE the8020__system__settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, definitionHash TEXT NOT NULL, updatedAt TEXT NOT NULL);
     INSERT INTO the8020__system__settings VALUES ('system.profile', '{"id":"sys-aaaaaaaaaa","name":"Development","role":"development"}', 'the8020/system', '2026-01-01T00:00:00Z');
     CREATE TABLE the8020__users__sessions (sessionId TEXT PRIMARY KEY, username TEXT NOT NULL,
@@ -490,6 +490,28 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
       fullName: " Alice Updated ",
     });
     assertEquals(updated.user.full_name, "Alice Updated");
+    const { preferredLanguage } = await import("../language.ts");
+    assertEquals(await preferredLanguage("alice"), null);
+    await admin.updateDetails("alice", {
+      fullName: "Alice Updated",
+      language: "en",
+    });
+    assertEquals(await preferredLanguage("alice"), "en");
+    await admin.updateDetails("alice", { fullName: "Alice Updated" });
+    assertEquals(await preferredLanguage("alice"), "en");
+    await assertRejects(() =>
+      admin.updateDetails("alice", {
+        fullName: "Alice Updated",
+        language: "de",
+      })
+    );
+    await admin.updateDetails("alice", {
+      fullName: "Alice Updated",
+      language: null,
+    });
+    assertEquals(await preferredLanguage("alice"), null);
+    assertEquals(await preferredLanguage("public-principal"), null);
+
     assertEquals(updated.user.auth_version, account.auth_version);
     assertEquals(updated.user.active_authentication_session_count, 1);
     assertEquals((await users.validateSession(claims))?.username, "alice");

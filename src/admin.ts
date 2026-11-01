@@ -34,6 +34,7 @@ function summarize(record: PublicUser, activeSessions: number) {
   return {
     username: record.username,
     full_name: record.fullName,
+    language: record.language,
     enabled: record.enabled,
     has_password: record.passwordSet === 1,
     auth_version: record.authVersion,
@@ -79,6 +80,7 @@ async function readUser(username: string, database: Queryable = db) {
     .select([
       Users.username,
       Users.fullName,
+      Users.language,
       Users.enabled,
       passwordSet,
       Users.authVersion,
@@ -145,6 +147,7 @@ export async function list() {
     Users.select([
       Users.username,
       Users.fullName,
+      Users.language,
       Users.enabled,
       passwordSet,
       Users.authVersion,
@@ -240,6 +243,16 @@ export async function updateDetails(
     await requirePermission("the8020.users.user.edit", username);
   }
   const profile = userProfile.parse(details);
+  if (profile.language != null) {
+    const { getConfiguration } = await import("/p/the8020/i18n/mod.ts");
+    if (
+      !(await getConfiguration()).languages.some((item) =>
+        item.code === profile.language
+      )
+    ) {
+      throw new TypeError("Choose an enabled language.");
+    }
+  }
   return update(username, false, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({ ...profile, updatedAt: new Date() })

@@ -1,3 +1,5 @@
+import { text } from "/p/the8020/i18n/mod.ts";
+import { msg } from "/p/the8020/users/i18n/messages.ts";
 import { list } from "../../src/admin.ts";
 
 /** Live status for the Home Users tile. */
@@ -8,6 +10,7 @@ export default async function usersStatus() {
   const disabled = users.filter((user) => !user.enabled).length;
   return {
     value: users.length,
-    detail: `${signedIn} signed in${disabled ? `, ${disabled} disabled` : ""}`,
+    detail: text(msg("widgets.signedIn", { count: signedIn })) +
+      (disabled ? text(msg("widgets.disabled", { count: disabled })) : ""),
   };
 }

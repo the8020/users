@@ -11,6 +11,9 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 # Local Contracts
 
+- Profile updates validate non-null languages against enabled configuration.
+  Omission preserves the preference; null removes it. Account reads include it.
+
 - Account mutations enforce the declared `users.user.*` actions before writes or
   password hashing. Own profile/password replacement and sign-in revocation
   remain self-service. Creating accounts leaves roles absent.

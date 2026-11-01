@@ -1,3 +1,5 @@
+import { text as localizedText } from "/p/the8020/i18n/mod.ts";
+import { msg } from "/p/the8020/users/i18n/messages.ts";
 import {
   BACK_EVENT,
   callScreen,
@@ -31,7 +33,7 @@ export async function userCertificates(username: string): Promise<void> {
     }));
     const event = await callScreen({
       id: "user-certificates",
-      title: `Certificates · ${username}`,
+      title: msg("certificates.certificates_username", { username: username }),
       model,
       schema,
       layout: {
@@ -39,8 +41,12 @@ export async function userCertificates(username: string): Promise<void> {
         id: "user-certificates",
         root: {
           toolbar: [
-            { id: "add", label: "Add certificate", kind: "primary" },
-            { id: "refresh", label: "Refresh" },
+            {
+              id: "add",
+              label: msg("certificates.add_certificate"),
+              kind: "primary",
+            },
+            { id: "refresh", label: msg("certificates.refresh") },
           ],
           type: "list",
           bind: "certificates",
@@ -76,7 +82,7 @@ async function enroll(username: string) {
     });
     const event = await callScreen({
       id: "user-certificate-add",
-      title: "Add certificate",
+      title: msg("certificates.add_certificate"),
       model,
       schema,
       controls: [
@@ -90,20 +96,27 @@ async function enroll(username: string) {
         },
       ],
       header: {
-        actions: [{ id: "save", label: "Add certificate", kind: "primary" }],
+        actions: [{
+          id: "save",
+          label: msg("certificates.add_certificate"),
+          kind: "primary",
+        }],
       },
     });
     if (event.action === BACK_EVENT) return;
     if (event.action === "save") {
       try {
         await addCertificate(username, model.data.label, upload.take());
-        sendMessage("Certificate added", "success");
+        sendMessage(
+          localizedText(msg("certificates.certificate_added")),
+          "success",
+        );
         return;
       } catch (error) {
         sendMessage(
           error instanceof Error
             ? error.message
-            : "Certificate could not be added",
+            : localizedText(msg("certificates.certificate_could_not_be_added")),
           "error",
         );
       }
@@ -119,7 +132,7 @@ async function detail(
   while (true) {
     const event = await callScreen({
       id: "user-certificate",
-      title: selected.label || "Certificate",
+      title: selected.label || localizedText(msg("program.certificate")),
       schema: certificateRow,
       model,
       controls: Object.keys(certificateRow.shape).map((key) => ({
@@ -131,7 +144,7 @@ async function detail(
       header: {
         actions: [{
           id: "remove",
-          label: "Remove certificate",
+          label: msg("certificates.remove_certificate"),
           kind: "danger",
         }],
       },
@@ -140,20 +153,25 @@ async function detail(
     if (event.action !== "remove") continue;
     const confirmed = await confirmAction({
       id: "user-certificate-remove",
-      title: "Remove certificate?",
-      message: "Subsequent calls using this certificate will be denied.",
-      confirm: "Remove certificate",
+      title: msg("certificates.remove_certificate_2"),
+      message: localizedText(
+        msg("certificates.subsequent_calls_using_this_certificate_will_be"),
+      ),
+      confirm: msg("certificates.remove_certificate"),
     });
     if (!confirmed) continue;
     try {
       await removeCertificate(username, selected.fingerprint);
-      sendMessage("Certificate removed", "success");
+      sendMessage(
+        localizedText(msg("certificates.certificate_removed")),
+        "success",
+      );
       return;
     } catch (error) {
       sendMessage(
         error instanceof Error
           ? error.message
-          : "Certificate could not be removed",
+          : localizedText(msg("certificates.certificate_could_not_be_removed")),
         "error",
       );
     }

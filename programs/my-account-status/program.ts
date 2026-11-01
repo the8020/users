@@ -1,3 +1,5 @@
+import { text } from "/p/the8020/i18n/mod.ts";
+import { msg } from "/p/the8020/users/i18n/messages.ts";
 import { currentUser } from "../../mod.ts";
 import {
   CERTIFICATE_WARNING_DAYS,
@@ -17,11 +19,14 @@ export default async function myAccountStatus() {
     : expiry.label;
   return {
     value: expiry.days === 0
-      ? "< 1 day"
-      : `${expiry.days} ${expiry.days === 1 ? "day" : "days"}`,
-    detail: `Certificate ${label} expires on ${
-      expiry.expiresAt.toISOString().slice(0, 10)
-    }. Request a new one.`,
+      ? text(msg("widgets.lessDay"))
+      : text(msg("widgets.days", { count: expiry.days })),
+    detail: text(
+      msg("widgets.certificateExpires", {
+        label,
+        date: expiry.expiresAt.toISOString().slice(0, 10),
+      }),
+    ),
     status: expiry.status,
   };
 }

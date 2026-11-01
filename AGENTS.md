@@ -110,6 +110,8 @@ relevant child AGENTS.md
 
 ## Child DOX Index
 
+- [i18n/AGENTS.md](i18n/AGENTS.md): English and Czech presentation catalogs.
+
 This root retains repository-wide contracts and files outside the child scopes
 below.
 
@@ -155,6 +157,11 @@ below.
   signing keys, kernel principals, sandbox lifecycle, or database credentials.
 
 # Local Contracts
+
+- Users owns nullable account language preference and `language.ts` reads it
+  without changing execution eligibility. Missing preferences use the system
+  default. Profile editing affects future sessions/service calls; it does not
+  update existing UUI sessions or authentication versions.
 
 - Account mutations enforce `users.user.*` permissions in `src/admin.ts`.
 - `declarations/auth-roles.toml` declares the platform roles, synchronized by

@@ -11,6 +11,9 @@ Parent DOX: [users DOX](../AGENTS.md).
 
 # Local Contracts
 
+- `users.language` is nullable text using the shared preferred-language field.
+  Existing rows naturally retain null after schema synchronization.
+
 - Authentication-session IDs and authentication versions reuse the shared
   account fields; datetime columns retain their logical datetime representation.
 
