@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Logg inn for å se kontoen din.",
     "ui.enter_a_new_password": "Angi et nytt passord.",
     "ui.the_passwords_do_not_match": "Passordene er ikke like.",
-    "ui.user_name": "Bruker {name}"
+    "ui.user_name": "Bruker {name}",
+    "user.technical_account": "Teknisk konto",
+    "user.technical_accounts_are_for_services_jobs": "Kun for tjenester, jobber og kontroller. En teknisk konto kan ikke logge inn i brukergrensesnittet; den logger inn på tjenester med sertifikat eller passord.",
+    "program.services_only": "Kun tjenester",
+    "program.make_name_a_technical_account": "Gjøre {name} til en teknisk konto?",
+    "program.it_can_no_longer_sign_in_to": "Den kan ikke lenger logge inn i brukergrensesnittet, og de nåværende påloggingene avsluttes. Tjenester, jobber og sertifikater fortsetter å fungere.",
+    "program.make_technical": "Gjør teknisk"
   }
 }

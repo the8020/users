@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Prijavite se za ogled svojega računa.",
     "ui.enter_a_new_password": "Vnesite novo geslo.",
     "ui.the_passwords_do_not_match": "Gesli se ne ujemata.",
-    "ui.user_name": "Uporabnik {name}"
+    "ui.user_name": "Uporabnik {name}",
+    "user.technical_account": "Tehnični račun",
+    "user.technical_accounts_are_for_services_jobs": "Samo za storitve, opravila in preverjanja. Tehnični račun se ne more prijaviti v uporabniški vmesnik; v storitve se prijavlja s potrdilom ali geslom.",
+    "program.services_only": "Samo storitve",
+    "program.make_name_a_technical_account": "Spremenim {name} v tehnični račun?",
+    "program.it_can_no_longer_sign_in_to": "V uporabniški vmesnik se ne bo mogel več prijaviti, njegove trenutne prijave pa se bodo končale. Storitve, opravila in potrdila delujejo naprej.",
+    "program.make_technical": "Spremeni v tehničnega"
   }
 }

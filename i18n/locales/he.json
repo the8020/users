@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "יש להיכנס כדי לראות את החשבון.",
     "ui.enter_a_new_password": "יש להזין סיסמה חדשה.",
     "ui.the_passwords_do_not_match": "הסיסמאות אינן תואמות.",
-    "ui.user_name": "משתמש {name}"
+    "ui.user_name": "משתמש {name}",
+    "user.technical_account": "חשבון טכני",
+    "user.technical_accounts_are_for_services_jobs": "לשירותים, משימות ובדיקות בלבד. חשבון טכני אינו יכול להיכנס לממשק המשתמש; הוא נכנס לשירותים באמצעות תעודה או סיסמה.",
+    "program.services_only": "שירותים בלבד",
+    "program.make_name_a_technical_account": "להפוך את {name} לחשבון טכני?",
+    "program.it_can_no_longer_sign_in_to": "הוא לא יוכל עוד להיכנס לממשק המשתמש, והכניסות הנוכחיות שלו יסתיימו. שירותים, משימות ותעודות ממשיכים לפעול.",
+    "program.make_technical": "הפיכה לחשבון טכני"
   }
 }

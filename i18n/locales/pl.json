@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Zaloguj się, aby wyświetlić swoje konto.",
     "ui.enter_a_new_password": "Wprowadź nowe hasło.",
     "ui.the_passwords_do_not_match": "Hasła nie są zgodne.",
-    "ui.user_name": "Użytkownik {name}"
+    "ui.user_name": "Użytkownik {name}",
+    "user.technical_account": "Konto techniczne",
+    "user.technical_accounts_are_for_services_jobs": "Tylko dla usług, zadań i kontroli. Konto techniczne nie może logować się do interfejsu użytkownika; do usług loguje się certyfikatem lub hasłem.",
+    "program.services_only": "Tylko usługi",
+    "program.make_name_a_technical_account": "Zmienić {name} w konto techniczne?",
+    "program.it_can_no_longer_sign_in_to": "Nie będzie już mogło logować się do interfejsu użytkownika, a jego bieżące logowania zostaną zakończone. Usługi, zadania i certyfikaty nadal działają.",
+    "program.make_technical": "Zmień w techniczne"
   }
 }

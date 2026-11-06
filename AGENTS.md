@@ -201,6 +201,14 @@ below.
   programs own user/session transactions and obtain command passwords only from
   execution-scoped secure input. There are no kernel recovery-user commands or
   bootstrap-administrator identity.
+- `technical` marks accounts for services, jobs and checks. They authenticate
+  services with certificates, HTTP Basic or allowances as before, but never use
+  the user interface: `login` refuses them with `technical: true`, and
+  `interfaceUser(username)` (enabled and not technical) is the check UUI's shell
+  and session services apply. Only `setTechnical` changes the flag; it requires
+  `the8020.users.user.edit` even for your own account and, when marking an
+  account technical, ends its sign-ins. `users.add --technical` and the
+  administration create/edit forms set it; My account never shows it.
 - Password presence controls password, token/session, and SSH eligibility.
   Certificate authentication independently requires an enabled account and a
   valid enrolled certificate, allowing certificate-only accounts. Creating a

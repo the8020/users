@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Entre para consultar a sua conta.",
     "ui.enter_a_new_password": "Insira uma nova senha.",
     "ui.the_passwords_do_not_match": "As senhas não coincidem.",
-    "ui.user_name": "Usuário {name}"
+    "ui.user_name": "Usuário {name}",
+    "user.technical_account": "Conta técnica",
+    "user.technical_accounts_are_for_services_jobs": "Somente para serviços, tarefas e verificações. Uma conta técnica não pode entrar na interface do usuário; ela se autentica nos serviços com certificado ou senha.",
+    "program.services_only": "Somente serviços",
+    "program.make_name_a_technical_account": "Tornar {name} uma conta técnica?",
+    "program.it_can_no_longer_sign_in_to": "Ela não poderá mais entrar na interface do usuário, e suas autenticações atuais serão terminadas. Serviços, tarefas e certificados continuam funcionando.",
+    "program.make_technical": "Tornar técnica"
   }
 }

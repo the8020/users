@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "アカウントを表示するにはサインインしてください。",
     "ui.enter_a_new_password": "新しいパスワードを入力してください。",
     "ui.the_passwords_do_not_match": "パスワードが一致しません。",
-    "ui.user_name": "ユーザー {name}"
+    "ui.user_name": "ユーザー {name}",
+    "user.technical_account": "技術アカウント",
+    "user.technical_accounts_are_for_services_jobs": "サービス、ジョブ、チェック専用です。技術アカウントはユーザーインターフェースにサインインできません。サービスには証明書またはパスワードでサインインします。",
+    "program.services_only": "サービスのみ",
+    "program.make_name_a_technical_account": "{name} を技術アカウントにしますか？",
+    "program.it_can_no_longer_sign_in_to": "ユーザーインターフェースにはサインインできなくなり、現在のサインインは終了します。サービス、ジョブ、証明書は引き続き動作します。",
+    "program.make_technical": "技術アカウントにする"
   }
 }

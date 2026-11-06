@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "अपना खाता देखने के लिए साइन इन करें।",
     "ui.enter_a_new_password": "नया पासवर्ड दर्ज करें।",
     "ui.the_passwords_do_not_match": "पासवर्ड मेल नहीं खाते।",
-    "ui.user_name": "उपयोगकर्ता {name}"
+    "ui.user_name": "उपयोगकर्ता {name}",
+    "user.technical_account": "तकनीकी खाता",
+    "user.technical_accounts_are_for_services_jobs": "केवल सेवाओं, जॉब और जाँचों के लिए। तकनीकी खाता उपयोगकर्ता इंटरफ़ेस में साइन इन नहीं कर सकता; यह प्रमाणपत्र या पासवर्ड से सेवाओं में साइन इन करता है।",
+    "program.services_only": "केवल सेवाएँ",
+    "program.make_name_a_technical_account": "{name} को तकनीकी खाता बनाएँ?",
+    "program.it_can_no_longer_sign_in_to": "यह अब उपयोगकर्ता इंटरफ़ेस में साइन इन नहीं कर सकेगा, और इसके मौजूदा साइन-इन समाप्त हो जाएँगे। सेवाएँ, जॉब और प्रमाणपत्र काम करते रहेंगे।",
+    "program.make_technical": "तकनीकी बनाएँ"
   }
 }

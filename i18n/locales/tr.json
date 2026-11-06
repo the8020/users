@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Hesabınızı görüntülemek için oturum açın.",
     "ui.enter_a_new_password": "Yeni bir parola girin.",
     "ui.the_passwords_do_not_match": "Parolalar eşleşmiyor.",
-    "ui.user_name": "Kullanıcı {name}"
+    "ui.user_name": "Kullanıcı {name}",
+    "user.technical_account": "Teknik hesap",
+    "user.technical_accounts_are_for_services_jobs": "Yalnızca servisler, işler ve denetimler için. Teknik hesap kullanıcı arayüzünde oturum açamaz; servislere sertifika veya parolayla giriş yapar.",
+    "program.services_only": "Yalnızca servisler",
+    "program.make_name_a_technical_account": "{name} teknik hesaba dönüştürülsün mü?",
+    "program.it_can_no_longer_sign_in_to": "Artık kullanıcı arayüzünde oturum açamayacak ve mevcut girişleri sonlandırılacak. Servisler, işler ve sertifikalar çalışmaya devam eder.",
+    "program.make_technical": "Teknik hesaba dönüştür"
   }
 }

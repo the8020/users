@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Masuk untuk melihat akun Anda.",
     "ui.enter_a_new_password": "Masukkan kata sandi baru.",
     "ui.the_passwords_do_not_match": "Kata sandi tidak cocok.",
-    "ui.user_name": "Pengguna {name}"
+    "ui.user_name": "Pengguna {name}",
+    "user.technical_account": "Akun teknis",
+    "user.technical_accounts_are_for_services_jobs": "Hanya untuk layanan, job, dan pemeriksaan. Akun teknis tidak dapat masuk ke antarmuka pengguna; akun ini masuk ke layanan dengan sertifikat atau kata sandi.",
+    "program.services_only": "Hanya layanan",
+    "program.make_name_a_technical_account": "Jadikan {name} akun teknis?",
+    "program.it_can_no_longer_sign_in_to": "Akun ini tidak dapat lagi masuk ke antarmuka pengguna, dan login saat ini akan berakhir. Layanan, job, dan sertifikat tetap berjalan.",
+    "program.make_technical": "Jadikan teknis"
   }
 }

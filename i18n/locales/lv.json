@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Piesakieties, lai skatītu savu kontu.",
     "ui.enter_a_new_password": "Ievadiet jaunu paroli.",
     "ui.the_passwords_do_not_match": "Paroles nesakrīt.",
-    "ui.user_name": "Lietotājs {name}"
+    "ui.user_name": "Lietotājs {name}",
+    "user.technical_account": "Tehniskais konts",
+    "user.technical_accounts_are_for_services_jobs": "Tikai pakalpojumiem, uzdevumiem un pārbaudēm. Tehniskais konts nevar pieteikties lietotāja saskarnē; pakalpojumos tas piesakās ar sertifikātu vai paroli.",
+    "program.services_only": "Tikai pakalpojumi",
+    "program.make_name_a_technical_account": "Vai padarīt {name} par tehnisko kontu?",
+    "program.it_can_no_longer_sign_in_to": "Tas vairs nevarēs pieteikties lietotāja saskarnē, un tā pašreizējās pieteikšanās tiks izbeigtas. Pakalpojumi, uzdevumi un sertifikāti turpinās darboties.",
+    "program.make_technical": "Padarīt par tehnisku"
   }
 }

@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Fiókja megtekintéséhez jelentkezzen be.",
     "ui.enter_a_new_password": "Adjon meg új jelszót.",
     "ui.the_passwords_do_not_match": "A jelszavak nem egyeznek.",
-    "ui.user_name": "Felhasználó: {name}"
+    "ui.user_name": "Felhasználó: {name}",
+    "user.technical_account": "Technikai fiók",
+    "user.technical_accounts_are_for_services_jobs": "Csak szolgáltatásokhoz, feladatokhoz és ellenőrzésekhez. A technikai fiók nem jelentkezhet be a felhasználói felületre; a szolgáltatásokba tanúsítvánnyal vagy jelszóval jelentkezik be.",
+    "program.services_only": "Csak szolgáltatások",
+    "program.make_name_a_technical_account": "Technikai fiókká alakítja a(z) {name} fiókot?",
+    "program.it_can_no_longer_sign_in_to": "Többé nem jelentkezhet be a felhasználói felületre, és jelenlegi bejelentkezései megszűnnek. A szolgáltatások, feladatok és tanúsítványok továbbra is működnek.",
+    "program.make_technical": "Átalakítás technikaivá"
   }
 }

@@ -60,8 +60,11 @@ function summary(user: User): z.infer<typeof UserRow> {
     username: user.username,
     fullName: user.full_name,
     enabled: user.enabled,
+    technical: user.technical,
     signIn: !user.enabled
       ? localizedText(msg("program.disabled"))
+      : user.technical
+      ? localizedText(msg("program.services_only"))
       : user.has_password
       ? localizedText(msg("program.allowed"))
       : localizedText(msg("program.no_password")),
@@ -146,7 +149,13 @@ export async function userDetail(
     }
     model ??= new Model({ ...summary(user), certificate });
     Object.assign(model.data, summary(user), { certificate });
-    const details = ["username", "fullName", "signIn", "activeSessions"];
+    const details = [
+      "username",
+      "fullName",
+      "technical",
+      "signIn",
+      "activeSessions",
+    ];
     if (certificate) details.push("certificate");
     const event = await callScreen({
       id: selfService ? "my-account" : "user-detail",
@@ -158,6 +167,7 @@ export async function userDetail(
       controls: [
         { id: "username", bind: "username", readOnly: true },
         { id: "fullName", bind: "fullName", readOnly: true, length: "long" },
+        { id: "technical", bind: "technical", readOnly: true, length: "short" },
         { id: "signIn", bind: "signIn", readOnly: true, length: "short" },
         {
           id: "activeSessions",
@@ -220,7 +230,7 @@ export async function userDetail(
     if (event.action === BACK_EVENT) return;
     try {
       if (event.action === "edit") {
-        await presentModal(() => editDetails(user));
+        await presentModal(() => editDetails(user, !selfService));
       }
       if (event.action === "password") {
         await presentModal(() => changePassword(user, !selfService));
@@ -280,18 +290,25 @@ export async function userDetail(
   }
 }
 
-async function editDetails(user: User): Promise<void> {
+async function editDetails(user: User, administration = false): Promise<void> {
+  // Only administration changes the account type, never My account.
+  const Screen = userProfile.extend({ technical: userSummary.shape.technical });
   const model = new Model({
     fullName: user.full_name,
     language: user.language,
+    technical: user.technical,
   });
   while (true) {
     const event = await callScreen({
       id: "user-edit",
       title: msg("program.edit_details"),
-      schema: userProfile,
+      schema: Screen,
       model,
-      controls: [{ bind: "fullName", length: "long" }, { bind: "language" }],
+      controls: [
+        { bind: "fullName", length: "long" },
+        { bind: "language" },
+        ...(administration ? [{ bind: "technical" }] : []),
+      ],
       header: {
         actions: [{
           id: "save",
@@ -303,7 +320,21 @@ async function editDetails(user: User): Promise<void> {
     if (event.action === BACK_EVENT) return;
     if (event.action !== "save") continue;
     try {
-      await accounts.updateDetails(user.username, model.data);
+      const { technical, ...profile } = model.data;
+      if (
+        administration && technical && !user.technical &&
+        !await confirm(
+          localizedText(msg("program.make_name_a_technical_account", {
+            name: user.username,
+          })),
+          localizedText(msg("program.it_can_no_longer_sign_in_to")),
+          localizedText(msg("program.make_technical")),
+        )
+      ) continue;
+      await accounts.updateDetails(user.username, profile);
+      if (administration && technical !== user.technical) {
+        await accounts.setTechnical(user.username, technical);
+      }
       sendMessage(localizedText(msg("program.user_details_saved")), "success");
       return;
     } catch (error) {
@@ -319,8 +350,14 @@ async function createUser(): Promise<string | undefined> {
       control: "password",
       length: "long",
     }),
+    technical: userSummary.shape.technical,
   });
-  const model = new Model({ username: "", fullName: "", password: "" });
+  const model = new Model({
+    username: "",
+    fullName: "",
+    password: "",
+    technical: false,
+  });
   while (true) {
     const event = await callScreen({
       id: "user-add",
@@ -329,7 +366,7 @@ async function createUser(): Promise<string | undefined> {
       model,
       controls: [{ bind: "username" }, { bind: "fullName" }, {
         bind: "password",
-      }],
+      }, { bind: "technical" }],
       header: {
         actions: [{
           id: "create",
@@ -348,6 +385,7 @@ async function createUser(): Promise<string | undefined> {
         model.data.username,
         model.data.password,
         model.data.fullName,
+        model.data.technical,
       );
       sendMessage(
         localizedText(

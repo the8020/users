@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Logga in för att visa ditt konto.",
     "ui.enter_a_new_password": "Ange ett nytt lösenord.",
     "ui.the_passwords_do_not_match": "Lösenorden matchar inte.",
-    "ui.user_name": "Användare {name}"
+    "ui.user_name": "Användare {name}",
+    "user.technical_account": "Tekniskt konto",
+    "user.technical_accounts_are_for_services_jobs": "Endast för tjänster, jobb och kontroller. Ett tekniskt konto kan inte logga in i användargränssnittet; det loggar in i tjänster med certifikat eller lösenord.",
+    "program.services_only": "Endast tjänster",
+    "program.make_name_a_technical_account": "Göra {name} till ett tekniskt konto?",
+    "program.it_can_no_longer_sign_in_to": "Det kan inte längre logga in i användargränssnittet, och dess aktuella inloggningar avslutas. Tjänster, jobb och certifikat fortsätter att fungera.",
+    "program.make_technical": "Gör tekniskt"
   }
 }

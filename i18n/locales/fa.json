@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "برای دیدن حساب خود وارد شوید.",
     "ui.enter_a_new_password": "گذرواژهٔ جدید وارد کنید.",
     "ui.the_passwords_do_not_match": "گذرواژه‌ها یکسان نیستند.",
-    "ui.user_name": "کاربر {name}"
+    "ui.user_name": "کاربر {name}",
+    "user.technical_account": "حساب فنی",
+    "user.technical_accounts_are_for_services_jobs": "فقط برای سرویس‌ها، کارها و بررسی‌ها. حساب فنی نمی‌تواند به رابط کاربری وارد شود؛ با گواهی یا گذرواژه به سرویس‌ها وارد می‌شود.",
+    "program.services_only": "فقط سرویس‌ها",
+    "program.make_name_a_technical_account": "{name} به حساب فنی تبدیل شود؟",
+    "program.it_can_no_longer_sign_in_to": "دیگر نمی‌تواند به رابط کاربری وارد شود و ورودهای فعلی آن پایان می‌یابند. سرویس‌ها، کارها و گواهی‌ها همچنان کار می‌کنند.",
+    "program.make_technical": "تبدیل به حساب فنی"
   }
 }

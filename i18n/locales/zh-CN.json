@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "请登录以查看您的账户。",
     "ui.enter_a_new_password": "请输入新密码。",
     "ui.the_passwords_do_not_match": "两次密码不一致。",
-    "ui.user_name": "用户 {name}"
+    "ui.user_name": "用户 {name}",
+    "user.technical_account": "技术账户",
+    "user.technical_accounts_are_for_services_jobs": "仅用于服务、作业和检查。技术账户无法登录用户界面；它使用证书或密码登录服务。",
+    "program.services_only": "仅限服务",
+    "program.make_name_a_technical_account": "将 {name} 设为技术账户？",
+    "program.it_can_no_longer_sign_in_to": "该账户将无法再登录用户界面，当前登录将结束。服务、作业和证书继续正常工作。",
+    "program.make_technical": "设为技术账户"
   }
 }

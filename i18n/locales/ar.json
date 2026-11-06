@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "سجّل الدخول لعرض حسابك.",
     "ui.enter_a_new_password": "أدخل كلمة مرور جديدة.",
     "ui.the_passwords_do_not_match": "كلمتا المرور غير متطابقتين.",
-    "ui.user_name": "المستخدم {name}"
+    "ui.user_name": "المستخدم {name}",
+    "user.technical_account": "حساب تقني",
+    "user.technical_accounts_are_for_services_jobs": "للخدمات والمهام وعمليات الفحص فقط. لا يمكن للحساب التقني تسجيل الدخول إلى واجهة المستخدم؛ بل يسجّل الدخول إلى الخدمات بشهادة أو كلمة مرور.",
+    "program.services_only": "الخدمات فقط",
+    "program.make_name_a_technical_account": "تحويل {name} إلى حساب تقني؟",
+    "program.it_can_no_longer_sign_in_to": "لن يتمكن بعد الآن من تسجيل الدخول إلى واجهة المستخدم، وستنتهي تسجيلات دخوله الحالية. تستمر الخدمات والمهام والشهادات في العمل.",
+    "program.make_technical": "تحويل إلى حساب تقني"
   }
 }

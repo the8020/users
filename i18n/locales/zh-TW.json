@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "請登入以檢視您的帳戶。",
     "ui.enter_a_new_password": "請輸入新密碼。",
     "ui.the_passwords_do_not_match": "兩次密碼不一致。",
-    "ui.user_name": "使用者 {name}"
+    "ui.user_name": "使用者 {name}",
+    "user.technical_account": "技術帳戶",
+    "user.technical_accounts_are_for_services_jobs": "僅用於服務、作業和檢查。技術帳戶無法登入使用者介面；它使用憑證或密碼登入服務。",
+    "program.services_only": "僅限服務",
+    "program.make_name_a_technical_account": "將 {name} 設為技術帳戶？",
+    "program.it_can_no_longer_sign_in_to": "該帳戶將無法再登入使用者介面，目前的登入將結束。服務、作業和憑證會繼續運作。",
+    "program.make_technical": "設為技術帳戶"
   }
 }

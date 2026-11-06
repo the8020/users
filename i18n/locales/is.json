@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Skráðu þig inn til að skoða reikninginn þinn.",
     "ui.enter_a_new_password": "Sláðu inn nýtt lykilorð.",
     "ui.the_passwords_do_not_match": "Lykilorðin passa ekki.",
-    "ui.user_name": "Notandi {name}"
+    "ui.user_name": "Notandi {name}",
+    "user.technical_account": "Tæknireikningur",
+    "user.technical_accounts_are_for_services_jobs": "Eingöngu fyrir þjónustur, verk og athuganir. Tæknireikningur getur ekki skráð sig inn í notendaviðmótið; hann skráir sig inn í þjónustur með vottorði eða lykilorði.",
+    "program.services_only": "Aðeins þjónustur",
+    "program.make_name_a_technical_account": "Gera {name} að tæknireikningi?",
+    "program.it_can_no_longer_sign_in_to": "Hann getur ekki lengur skráð sig inn í notendaviðmótið og núverandi innskráningum hans lýkur. Þjónustur, verk og vottorð virka áfram.",
+    "program.make_technical": "Gera að tæknireikningi"
   }
 }

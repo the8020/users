@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Log masuk untuk melihat akaun anda.",
     "ui.enter_a_new_password": "Masukkan kata laluan baharu.",
     "ui.the_passwords_do_not_match": "Kata laluan tidak sepadan.",
-    "ui.user_name": "Pengguna {name}"
+    "ui.user_name": "Pengguna {name}",
+    "user.technical_account": "Akaun teknikal",
+    "user.technical_accounts_are_for_services_jobs": "Untuk perkhidmatan, tugas dan semakan sahaja. Akaun teknikal tidak boleh log masuk ke antara muka pengguna; ia log masuk ke perkhidmatan dengan sijil atau kata laluan.",
+    "program.services_only": "Perkhidmatan sahaja",
+    "program.make_name_a_technical_account": "Jadikan {name} akaun teknikal?",
+    "program.it_can_no_longer_sign_in_to": "Ia tidak lagi boleh log masuk ke antara muka pengguna, dan log masuk semasanya akan tamat. Perkhidmatan, tugas dan sijil terus berfungsi.",
+    "program.make_technical": "Jadikan teknikal"
   }
 }

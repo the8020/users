@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Увійдіть, щоб переглянути свій обліковий запис.",
     "ui.enter_a_new_password": "Введіть новий пароль.",
     "ui.the_passwords_do_not_match": "Паролі не збігаються.",
-    "ui.user_name": "Користувач {name}"
+    "ui.user_name": "Користувач {name}",
+    "user.technical_account": "Технічний обліковий запис",
+    "user.technical_accounts_are_for_services_jobs": "Лише для сервісів, завдань і перевірок. Технічний обліковий запис не може входити в інтерфейс користувача; у сервіси він входить за сертифікатом або паролем.",
+    "program.services_only": "Лише сервіси",
+    "program.make_name_a_technical_account": "Зробити {name} технічним обліковим записом?",
+    "program.it_can_no_longer_sign_in_to": "Він більше не зможе входити в інтерфейс користувача, а його поточні входи буде завершено. Сервіси, завдання й сертифікати продовжать працювати.",
+    "program.make_technical": "Зробити технічним"
   }
 }

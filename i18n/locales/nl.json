@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Meld je aan om je account te bekijken.",
     "ui.enter_a_new_password": "Voer een nieuw wachtwoord in.",
     "ui.the_passwords_do_not_match": "De wachtwoorden komen niet overeen.",
-    "ui.user_name": "Gebruiker {name}"
+    "ui.user_name": "Gebruiker {name}",
+    "user.technical_account": "Technisch account",
+    "user.technical_accounts_are_for_services_jobs": "Alleen voor services, taken en controles. Een technisch account kan niet aanmelden bij de gebruikersinterface; het meldt zich bij services aan met een certificaat of wachtwoord.",
+    "program.services_only": "Alleen services",
+    "program.make_name_a_technical_account": "{name} een technisch account maken?",
+    "program.it_can_no_longer_sign_in_to": "Het kan niet meer aanmelden bij de gebruikersinterface en de huidige aanmeldingen worden beëindigd. Services, taken en certificaten blijven werken.",
+    "program.make_technical": "Technisch maken"
   }
 }

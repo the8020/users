@@ -2,8 +2,8 @@ version = 1
 command = "users.add"
 program = "the8020/users/add"
 summary = "Add a user"
-description = "Create a user without a password, or supply one using --password-stdin. Password sign-in requires a password."
-usage = "<username> [--password-stdin]"
+description = "Create a user without a password, or supply one using --password-stdin. Password sign-in requires a password. --technical creates an account for services, jobs and checks that cannot sign in to the user interface."
+usage = "<username> [--password-stdin] [--technical]"
 mutates_state = true
 restart_behavior = "none"
 [[secrets]]
@@ -16,3 +16,5 @@ stdin_option = "password-stdin"
 command = "users.add alice"
 [[examples]]
 command = "users.add alice --password-stdin"
+[[examples]]
+command = "users.add monitoring --technical"

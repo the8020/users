@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Oma konto vaatamiseks logi sisse.",
     "ui.enter_a_new_password": "Sisesta uus parool.",
     "ui.the_passwords_do_not_match": "Paroolid ei kattu.",
-    "ui.user_name": "Kasutaja {name}"
+    "ui.user_name": "Kasutaja {name}",
+    "user.technical_account": "Tehniline konto",
+    "user.technical_accounts_are_for_services_jobs": "Ainult teenuste, tööde ja kontrollide jaoks. Tehniline konto ei saa kasutajaliidesesse sisse logida; teenustesse logib see sisse sertifikaadi või parooliga.",
+    "program.services_only": "Ainult teenused",
+    "program.make_name_a_technical_account": "Kas muuta {name} tehniliseks kontoks?",
+    "program.it_can_no_longer_sign_in_to": "See ei saa enam kasutajaliidesesse sisse logida ja selle praegused sisselogimised lõpevad. Teenused, tööd ja sertifikaadid töötavad edasi.",
+    "program.make_technical": "Muuda tehniliseks"
   }
 }

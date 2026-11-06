@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Melden Sie sich an, um Ihr Konto anzuzeigen.",
     "ui.enter_a_new_password": "Geben Sie ein neues Passwort ein.",
     "ui.the_passwords_do_not_match": "Die Passwörter stimmen nicht überein.",
-    "ui.user_name": "Benutzer {name}"
+    "ui.user_name": "Benutzer {name}",
+    "user.technical_account": "Technisches Konto",
+    "user.technical_accounts_are_for_services_jobs": "Nur für Dienste, Aufträge und Prüfungen. Ein technisches Konto kann sich nicht an der Benutzeroberfläche anmelden; bei Diensten meldet es sich mit einem Zertifikat oder Passwort an.",
+    "program.services_only": "Nur Dienste",
+    "program.make_name_a_technical_account": "{name} zu einem technischen Konto machen?",
+    "program.it_can_no_longer_sign_in_to": "Es kann sich nicht mehr an der Benutzeroberfläche anmelden, und seine aktuellen Anmeldungen werden beendet. Dienste, Aufträge und Zertifikate funktionieren weiter.",
+    "program.make_technical": "Technisch machen"
   }
 }

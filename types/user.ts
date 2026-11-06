@@ -55,6 +55,10 @@ export const userSummary = userProfile.extend({
     label: msg("user.enabled"),
     description: msg("user.disabled_accounts_cannot_sign_in"),
   }),
+  technical: field(z.boolean(), {
+    label: msg("user.technical_account"),
+    description: msg("user.technical_accounts_are_for_services_jobs"),
+  }),
 });
 
 export const newUsername = field(username, {

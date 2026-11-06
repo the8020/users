@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Prijavite se za pregled svojeg računa.",
     "ui.enter_a_new_password": "Unesite novu lozinku.",
     "ui.the_passwords_do_not_match": "Lozinke se ne podudaraju.",
-    "ui.user_name": "Korisnik {name}"
+    "ui.user_name": "Korisnik {name}",
+    "user.technical_account": "Tehnički račun",
+    "user.technical_accounts_are_for_services_jobs": "Samo za servise, poslove i provjere. Tehnički račun ne može se prijaviti u korisničko sučelje; servisima se prijavljuje certifikatom ili lozinkom.",
+    "program.services_only": "Samo servisi",
+    "program.make_name_a_technical_account": "Pretvoriti {name} u tehnički račun?",
+    "program.it_can_no_longer_sign_in_to": "Više se neće moći prijaviti u korisničko sučelje, a njegove trenutačne prijave će završiti. Servisi, poslovi i certifikati nastavljaju raditi.",
+    "program.make_technical": "Pretvori u tehnički"
   }
 }

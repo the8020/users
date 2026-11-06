@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Prijavi se da vidiš svoj nalog.",
     "ui.enter_a_new_password": "Unesi novu lozinku.",
     "ui.the_passwords_do_not_match": "Lozinke se ne podudaraju.",
-    "ui.user_name": "Korisnik {name}"
+    "ui.user_name": "Korisnik {name}",
+    "user.technical_account": "Tehnički nalog",
+    "user.technical_accounts_are_for_services_jobs": "Samo za servise, poslove i provere. Tehnički nalog ne može da se prijavi na korisnički interfejs; na servise se prijavljuje sertifikatom ili lozinkom.",
+    "program.services_only": "Samo servisi",
+    "program.make_name_a_technical_account": "Pretvoriti {name} u tehnički nalog?",
+    "program.it_can_no_longer_sign_in_to": "Više neće moći da se prijavi na korisnički interfejs, a njegove trenutne prijave će se završiti. Servisi, poslovi i sertifikati nastavljaju da rade.",
+    "program.make_technical": "Pretvori u tehnički"
   }
 }

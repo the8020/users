@@ -7,6 +7,7 @@ const Users = table("the8020__users__users", {
   language: t.from(preferredLanguage),
   passwordHash: t.text().default(""),
   enabled: t.from(userSummary.shape.enabled).default(true),
+  technical: t.from(userSummary.shape.technical).default(false),
   authVersion: t.from(accountInfo.shape.authVersion).default(1),
   createdAt: t.datetime().defaultNow(),
   updatedAt: t.datetime().defaultNow(),

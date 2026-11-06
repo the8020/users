@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "เข้าสู่ระบบเพื่อดูบัญชีของคุณ",
     "ui.enter_a_new_password": "ป้อนรหัสผ่านใหม่",
     "ui.the_passwords_do_not_match": "รหัสผ่านไม่ตรงกัน",
-    "ui.user_name": "ผู้ใช้ {name}"
+    "ui.user_name": "ผู้ใช้ {name}",
+    "user.technical_account": "บัญชีทางเทคนิค",
+    "user.technical_accounts_are_for_services_jobs": "สำหรับบริการ งาน และการตรวจสอบเท่านั้น บัญชีทางเทคนิคเข้าสู่ระบบส่วนติดต่อผู้ใช้ไม่ได้ แต่เข้าสู่ระบบบริการด้วยใบรับรองหรือรหัสผ่าน",
+    "program.services_only": "บริการเท่านั้น",
+    "program.make_name_a_technical_account": "เปลี่ยน {name} เป็นบัญชีทางเทคนิคหรือไม่?",
+    "program.it_can_no_longer_sign_in_to": "จะเข้าสู่ระบบส่วนติดต่อผู้ใช้ไม่ได้อีก และการเข้าสู่ระบบปัจจุบันจะสิ้นสุด บริการ งาน และใบรับรองยังทำงานต่อ",
+    "program.make_technical": "เปลี่ยนเป็นบัญชีทางเทคนิค"
   }
 }

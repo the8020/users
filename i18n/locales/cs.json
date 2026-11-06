@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Pro zobrazení účtu se přihlaste.",
     "ui.enter_a_new_password": "Zadejte nové heslo.",
     "ui.the_passwords_do_not_match": "Hesla se neshodují.",
-    "ui.user_name": "Uživatel {name}"
+    "ui.user_name": "Uživatel {name}",
+    "user.technical_account": "Technický účet",
+    "user.technical_accounts_are_for_services_jobs": "Pouze pro služby, úlohy a kontroly. Technický účet se nemůže přihlásit do uživatelského rozhraní; ke službám se přihlašuje certifikátem nebo heslem.",
+    "program.services_only": "Pouze služby",
+    "program.make_name_a_technical_account": "Změnit {name} na technický účet?",
+    "program.it_can_no_longer_sign_in_to": "Účet se už nebude moci přihlásit do uživatelského rozhraní a jeho současná přihlášení budou ukončena. Služby, úlohy a certifikáty budou fungovat dál.",
+    "program.make_technical": "Změnit na technický"
   }
 }

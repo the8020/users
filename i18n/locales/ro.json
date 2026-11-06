@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Autentificați-vă pentru a vă consulta contul.",
     "ui.enter_a_new_password": "Introduceți o parolă nouă.",
     "ui.the_passwords_do_not_match": "Parolele nu coincid.",
-    "ui.user_name": "Utilizator {name}"
+    "ui.user_name": "Utilizator {name}",
+    "user.technical_account": "Cont tehnic",
+    "user.technical_accounts_are_for_services_jobs": "Doar pentru servicii, sarcini și verificări. Un cont tehnic nu se poate autentifica în interfața utilizator; se autentifică la servicii cu un certificat sau o parolă.",
+    "program.services_only": "Doar servicii",
+    "program.make_name_a_technical_account": "Transformați {name} în cont tehnic?",
+    "program.it_can_no_longer_sign_in_to": "Nu se mai poate autentifica în interfața utilizator, iar autentificările curente se încheie. Serviciile, sarcinile și certificatele funcționează în continuare.",
+    "program.make_technical": "Transformă în tehnic"
   }
 }

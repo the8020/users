@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Inicia sessió per veure el teu compte.",
     "ui.enter_a_new_password": "Introdueix una contrasenya nova.",
     "ui.the_passwords_do_not_match": "Les contrasenyes no coincideixen.",
-    "ui.user_name": "Usuari {name}"
+    "ui.user_name": "Usuari {name}",
+    "user.technical_account": "Compte tècnic",
+    "user.technical_accounts_are_for_services_jobs": "Només per a serveis, tasques i comprovacions. Un compte tècnic no pot iniciar sessió a la interfície d'usuari; s'autentica als serveis amb un certificat o una contrasenya.",
+    "program.services_only": "Només serveis",
+    "program.make_name_a_technical_account": "Vols convertir {name} en un compte tècnic?",
+    "program.it_can_no_longer_sign_in_to": "Ja no podrà iniciar sessió a la interfície d'usuari i es tancaran els seus accessos actuals. Els serveis, les tasques i els certificats continuen funcionant.",
+    "program.make_technical": "Converteix en tècnic"
   }
 }

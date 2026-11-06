@@ -22,6 +22,7 @@ Deno.test("users own authentication identities and opaque sessions", () => {
       "language",
       "passwordHash",
       "enabled",
+      "technical",
       "authVersion",
       "createdAt",
       "updatedAt",

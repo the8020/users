@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Mag-sign in para makita ang account mo.",
     "ui.enter_a_new_password": "Maglagay ng bagong password.",
     "ui.the_passwords_do_not_match": "Hindi magkatugma ang mga password.",
-    "ui.user_name": "User {name}"
+    "ui.user_name": "User {name}",
+    "user.technical_account": "Teknikal na account",
+    "user.technical_accounts_are_for_services_jobs": "Para lang sa mga serbisyo, gawain at pagsusuri. Hindi makapag-sign in ang teknikal na account sa user interface; nagsa-sign in ito sa mga serbisyo gamit ang sertipiko o password.",
+    "program.services_only": "Mga serbisyo lang",
+    "program.make_name_a_technical_account": "Gawing teknikal na account ang {name}?",
+    "program.it_can_no_longer_sign_in_to": "Hindi na ito makakapag-sign in sa user interface, at matatapos ang kasalukuyang mga sign-in nito. Patuloy na gagana ang mga serbisyo, gawain at sertipiko.",
+    "program.make_technical": "Gawing teknikal"
   }
 }

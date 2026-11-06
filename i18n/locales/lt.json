@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Prisijunkite, kad peržiūrėtumėte savo paskyrą.",
     "ui.enter_a_new_password": "Įveskite naują slaptažodį.",
     "ui.the_passwords_do_not_match": "Slaptažodžiai nesutampa.",
-    "ui.user_name": "Naudotojas {name}"
+    "ui.user_name": "Naudotojas {name}",
+    "user.technical_account": "Techninė paskyra",
+    "user.technical_accounts_are_for_services_jobs": "Tik tarnyboms, užduotims ir patikroms. Techninė paskyra negali prisijungti prie naudotojo sąsajos; prie tarnybų ji jungiasi sertifikatu arba slaptažodžiu.",
+    "program.services_only": "Tik tarnybos",
+    "program.make_name_a_technical_account": "Paversti {name} technine paskyra?",
+    "program.it_can_no_longer_sign_in_to": "Ji nebegalės prisijungti prie naudotojo sąsajos, o dabartiniai jos prisijungimai baigsis. Tarnybos, užduotys ir sertifikatai veiks toliau.",
+    "program.make_technical": "Paversti technine"
   }
 }

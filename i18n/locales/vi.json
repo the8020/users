@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Đăng nhập để xem tài khoản.",
     "ui.enter_a_new_password": "Nhập mật khẩu mới.",
     "ui.the_passwords_do_not_match": "Mật khẩu không khớp.",
-    "ui.user_name": "Người dùng {name}"
+    "ui.user_name": "Người dùng {name}",
+    "user.technical_account": "Tài khoản kỹ thuật",
+    "user.technical_accounts_are_for_services_jobs": "Chỉ dành cho dịch vụ, tác vụ và kiểm tra. Tài khoản kỹ thuật không thể đăng nhập vào giao diện người dùng; tài khoản này đăng nhập vào dịch vụ bằng chứng chỉ hoặc mật khẩu.",
+    "program.services_only": "Chỉ dịch vụ",
+    "program.make_name_a_technical_account": "Chuyển {name} thành tài khoản kỹ thuật?",
+    "program.it_can_no_longer_sign_in_to": "Tài khoản sẽ không thể đăng nhập vào giao diện người dùng nữa và các lần đăng nhập hiện tại sẽ kết thúc. Dịch vụ, tác vụ và chứng chỉ vẫn hoạt động.",
+    "program.make_technical": "Chuyển thành kỹ thuật"
   }
 }

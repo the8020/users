@@ -6,6 +6,7 @@ export {
   clearCookie,
   currentUser,
   eligibleUser,
+  interfaceUser,
   issueAllowance,
   login,
   logout,

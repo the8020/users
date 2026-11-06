@@ -21,6 +21,8 @@ export interface User {
 
 export interface LoginResult {
   authenticated: boolean;
+  /** The password was right, but technical accounts cannot use the UI. */
+  technical?: boolean;
   user?: User;
   token?: string;
   setCookie?: string;
@@ -88,6 +90,16 @@ export async function eligibleUser(
     : undefined;
 }
 
+/**
+ * Whether the account may use the user interface: enabled and not technical.
+ * Technical accounts still authenticate services, jobs and checks.
+ */
+export async function interfaceUser(username: string): Promise<boolean> {
+  const account = await Users.select([Users.enabled, Users.technical])
+    .where(Users.username, "=", username).executeTakeFirst();
+  return account !== undefined && account.enabled && !account.technical;
+}
+
 /** Native admission has already established possession of this certificate's key. */
 export async function authenticateCertificate(
   fingerprint: string,
@@ -133,6 +145,7 @@ export async function login(
 ): Promise<LoginResult> {
   const account = await passwordAccount(input.username, input.password);
   if (account === undefined) return { authenticated: false };
+  if (account.technical) return { authenticated: false, technical: true };
   const session = await issueSession(account, "username", "remote");
   return {
     authenticated: true,

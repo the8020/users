@@ -36,6 +36,7 @@ function summarize(record: PublicUser, activeSessions: number) {
     full_name: record.fullName,
     language: record.language,
     enabled: record.enabled,
+    technical: record.technical,
     has_password: record.passwordSet === 1,
     auth_version: record.authVersion,
     created_at: record.createdAt.toISOString(),
@@ -82,6 +83,7 @@ async function readUser(username: string, database: Queryable = db) {
       Users.fullName,
       Users.language,
       Users.enabled,
+      Users.technical,
       passwordSet,
       Users.authVersion,
       Users.createdAt,
@@ -105,7 +107,12 @@ async function readUser(username: string, database: Queryable = db) {
   return summarize(record, count.count);
 }
 
-export async function add(username: string, password = "", fullName = "") {
+export async function add(
+  username: string,
+  password = "",
+  fullName = "",
+  technical = false,
+) {
   validateUsername(username);
   await requirePermission("the8020.users.user.create", username);
   const profile = userProfile.parse({ fullName });
@@ -118,6 +125,7 @@ export async function add(username: string, password = "", fullName = "") {
     ...profile,
     passwordHash,
     enabled: true,
+    technical,
     authVersion: 1,
     createdAt: now,
     updatedAt: now,
@@ -149,6 +157,7 @@ export async function list() {
       Users.fullName,
       Users.language,
       Users.enabled,
+      Users.technical,
       passwordSet,
       Users.authVersion,
       Users.createdAt,
@@ -256,6 +265,21 @@ export async function updateDetails(
   return update(username, false, async (transaction) => {
     const result = await transaction.updateTable(Users.table)
       .set({ ...profile, updatedAt: new Date() })
+      .where(Users.username, "=", username)
+      .executeTakeFirst();
+    return result.numUpdatedRows;
+  });
+}
+
+/**
+ * Technical accounts serve services, jobs and checks and cannot use the user
+ * interface. Marking an account technical ends its sign-ins.
+ */
+export async function setTechnical(username: string, technical: boolean) {
+  await requirePermission("the8020.users.user.edit", username);
+  return update(username, technical, async (transaction) => {
+    const result = await transaction.updateTable(Users.table)
+      .set({ technical, updatedAt: new Date() })
       .where(Users.username, "=", username)
       .executeTakeFirst();
     return result.numUpdatedRows;

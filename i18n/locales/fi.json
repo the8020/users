@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Kirjaudu sisään nähdäksesi tilisi.",
     "ui.enter_a_new_password": "Anna uusi salasana.",
     "ui.the_passwords_do_not_match": "Salasanat eivät täsmää.",
-    "ui.user_name": "Käyttäjä {name}"
+    "ui.user_name": "Käyttäjä {name}",
+    "user.technical_account": "Tekninen tili",
+    "user.technical_accounts_are_for_services_jobs": "Vain palveluille, tehtäville ja tarkistuksille. Tekninen tili ei voi kirjautua käyttöliittymään; palveluihin se kirjautuu varmenteella tai salasanalla.",
+    "program.services_only": "Vain palvelut",
+    "program.make_name_a_technical_account": "Muutetaanko {name} tekniseksi tiliksi?",
+    "program.it_can_no_longer_sign_in_to": "Tili ei voi enää kirjautua käyttöliittymään, ja sen nykyiset kirjautumiset päättyvät. Palvelut, tehtävät ja varmenteet toimivat edelleen.",
+    "program.make_technical": "Muuta tekniseksi"
   }
 }

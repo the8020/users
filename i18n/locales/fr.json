@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Connectez-vous pour consulter votre compte.",
     "ui.enter_a_new_password": "Saisissez un nouveau mot de passe.",
     "ui.the_passwords_do_not_match": "Les mots de passe ne correspondent pas.",
-    "ui.user_name": "Utilisateur {name}"
+    "ui.user_name": "Utilisateur {name}",
+    "user.technical_account": "Compte technique",
+    "user.technical_accounts_are_for_services_jobs": "Réservé aux services, tâches et vérifications. Un compte technique ne peut pas se connecter à l’interface utilisateur ; il se connecte aux services avec un certificat ou un mot de passe.",
+    "program.services_only": "Services uniquement",
+    "program.make_name_a_technical_account": "Faire de {name} un compte technique ?",
+    "program.it_can_no_longer_sign_in_to": "Il ne peut plus se connecter à l’interface utilisateur et ses connexions en cours sont fermées. Les services, tâches et certificats continuent de fonctionner.",
+    "program.make_technical": "Rendre technique"
   }
 }

@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Accedi per visualizzare il tuo account.",
     "ui.enter_a_new_password": "Inserisci una nuova password.",
     "ui.the_passwords_do_not_match": "Le password non corrispondono.",
-    "ui.user_name": "Utente {name}"
+    "ui.user_name": "Utente {name}",
+    "user.technical_account": "Account tecnico",
+    "user.technical_accounts_are_for_services_jobs": "Solo per servizi, attività e controlli. Un account tecnico non può accedere all'interfaccia utente; accede ai servizi con un certificato o una password.",
+    "program.services_only": "Solo servizi",
+    "program.make_name_a_technical_account": "Rendere {name} un account tecnico?",
+    "program.it_can_no_longer_sign_in_to": "Non potrà più accedere all'interfaccia utente e i suoi accessi attuali termineranno. Servizi, attività e certificati continuano a funzionare.",
+    "program.make_technical": "Rendi tecnico"
   }
 }

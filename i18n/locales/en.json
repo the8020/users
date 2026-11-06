@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Sign in to view your account.",
     "ui.enter_a_new_password": "Enter a new password.",
     "ui.the_passwords_do_not_match": "The passwords do not match.",
-    "ui.user_name": "User {name}"
+    "ui.user_name": "User {name}",
+    "user.technical_account": "Technical account",
+    "user.technical_accounts_are_for_services_jobs": "For services, jobs and checks only. A technical account cannot sign in to the user interface; it signs in to services with a certificate or password.",
+    "program.services_only": "Services only",
+    "program.make_name_a_technical_account": "Make {name} a technical account?",
+    "program.it_can_no_longer_sign_in_to": "It can no longer sign in to the user interface, and its current sign-ins end. Services, jobs and certificates keep working.",
+    "program.make_technical": "Make technical"
   }
 }

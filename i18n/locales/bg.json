@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Влезте, за да видите акаунта си.",
     "ui.enter_a_new_password": "Въведете нова парола.",
     "ui.the_passwords_do_not_match": "Паролите не съвпадат.",
-    "ui.user_name": "Потребител {name}"
+    "ui.user_name": "Потребител {name}",
+    "user.technical_account": "Технически акаунт",
+    "user.technical_accounts_are_for_services_jobs": "Само за услуги, задачи и проверки. Техническият акаунт не може да влиза в потребителския интерфейс; той влиза в услугите със сертификат или парола.",
+    "program.services_only": "Само услуги",
+    "program.make_name_a_technical_account": "Да стане ли {name} технически акаунт?",
+    "program.it_can_no_longer_sign_in_to": "Повече няма да може да влиза в потребителския интерфейс и текущите му влизания ще приключат. Услугите, задачите и сертификатите продължават да работят.",
+    "program.make_technical": "Направи технически"
   }
 }

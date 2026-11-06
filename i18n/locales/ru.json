@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "Войдите для просмотра своей учётной записи.",
     "ui.enter_a_new_password": "Введите новый пароль.",
     "ui.the_passwords_do_not_match": "Пароли не совпадают.",
-    "ui.user_name": "Пользователь {name}"
+    "ui.user_name": "Пользователь {name}",
+    "user.technical_account": "Техническая учётная запись",
+    "user.technical_accounts_are_for_services_jobs": "Только для сервисов, заданий и проверок. Техническая учётная запись не может входить в пользовательский интерфейс; в сервисы она входит по сертификату или паролю.",
+    "program.services_only": "Только сервисы",
+    "program.make_name_a_technical_account": "Сделать {name} технической учётной записью?",
+    "program.it_can_no_longer_sign_in_to": "Она больше не сможет входить в пользовательский интерфейс, а её текущие входы будут завершены. Сервисы, задания и сертификаты продолжат работать.",
+    "program.make_technical": "Сделать технической"
   }
 }

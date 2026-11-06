@@ -162,7 +162,8 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
   database.exec(`CREATE TABLE the8020__users__users (
     username TEXT PRIMARY KEY, passwordHash TEXT NOT NULL, enabled INTEGER NOT NULL,
     authVersion INTEGER NOT NULL, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL,
-    fullName TEXT NOT NULL DEFAULT '', language TEXT);
+    fullName TEXT NOT NULL DEFAULT '', language TEXT,
+    technical INTEGER NOT NULL DEFAULT 0);
     CREATE TABLE the8020__system__settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, definitionHash TEXT NOT NULL, updatedAt TEXT NOT NULL);
     INSERT INTO the8020__system__settings VALUES ('system.profile', '{"id":"sys-aaaaaaaaaa","name":"Development","role":"development"}', 'the8020/system', '2026-01-01T00:00:00Z');
     CREATE TABLE the8020__users__sessions (sessionId TEXT PRIMARY KEY, username TEXT NOT NULL,
@@ -441,6 +442,47 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     assert(result.setCookie.includes("Path=/; HttpOnly; SameSite=Lax"));
     assert(result.setCookie.includes("; Secure"));
     assert(result.setCookie.startsWith("the8020_auth_sys-aaaaaaaaaa="));
+    // Technical accounts authenticate services but never the user interface.
+    await admin.add("monitor", "service pass", "", true);
+    assertEquals(
+      await users.login(request, {
+        username: "monitor",
+        password: "service pass",
+      }),
+      { authenticated: false, technical: true },
+    );
+    assertEquals(
+      (await users.authenticatePassword("monitor", "service pass"))?.username,
+      "monitor",
+    );
+    assertEquals(
+      [
+        await users.interfaceUser("monitor"),
+        await users.interfaceUser("alice"),
+        await users.interfaceUser("nobody"),
+      ],
+      [false, true, false],
+    );
+    await admin.setTechnical("monitor", false);
+    assert(
+      (await users.login(request, {
+        username: "monitor",
+        password: "service pass",
+      })).authenticated,
+    );
+    assertEquals(
+      (await admin.user("monitor")).active_authentication_session_count,
+      1,
+    );
+    // Marking an account technical ends its sign-ins.
+    const technical = await admin.setTechnical("monitor", true);
+    assertEquals(
+      [
+        technical.user.technical,
+        technical.user.active_authentication_session_count,
+      ],
+      [true, 0],
+    );
     assertEquals(
       await users.requestToken(
         new Request(request.url, {

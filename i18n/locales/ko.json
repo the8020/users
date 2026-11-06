@@ -168,6 +168,12 @@
     "ui.sign_in_to_view_your_account": "내 계정을 보려면 로그인하세요.",
     "ui.enter_a_new_password": "새 비밀번호를 입력하세요.",
     "ui.the_passwords_do_not_match": "비밀번호가 일치하지 않습니다.",
-    "ui.user_name": "사용자 {name}"
+    "ui.user_name": "사용자 {name}",
+    "user.technical_account": "기술 계정",
+    "user.technical_accounts_are_for_services_jobs": "서비스, 작업, 점검 전용입니다. 기술 계정은 사용자 인터페이스에 로그인할 수 없으며, 인증서나 비밀번호로 서비스에 로그인합니다.",
+    "program.services_only": "서비스 전용",
+    "program.make_name_a_technical_account": "{name}을(를) 기술 계정으로 전환할까요?",
+    "program.it_can_no_longer_sign_in_to": "더 이상 사용자 인터페이스에 로그인할 수 없으며 현재 로그인이 종료됩니다. 서비스, 작업, 인증서는 계속 작동합니다.",
+    "program.make_technical": "기술 계정으로 전환"
   }
 }
