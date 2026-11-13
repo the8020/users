@@ -88,22 +88,40 @@ function event(channel: TestChannel, screen: ScreenSnapshot, action: string) {
   });
 }
 
-/** Wait for a screen other than the one currently shown. */
-async function next(channel: TestChannel, previous: ScreenSnapshot) {
-  for (let attempt = 0; attempt < 200; attempt++) {
+/**
+ * Wait until the screen with this ID is shown, newer than `after` when given:
+ * returning to the detail redraws it, and events for an older revision are
+ * rejected as stale.
+ */
+async function until(
+  channel: TestChannel,
+  id: string,
+  after?: ScreenSnapshot,
+) {
+  for (let attempt = 0; attempt < 500; attempt++) {
     const screen = channel.screen();
     if (
-      screen !== undefined &&
-      (screen.id !== previous.id || screen.revision !== previous.revision)
+      screen?.id === id &&
+      (after === undefined || screen.revision > after.revision)
     ) return screen;
     await new Promise((resolve) => setTimeout(resolve, 1));
   }
-  throw new Error(`no screen followed ${previous.id}`);
+  throw new Error(`screen ${id} was not shown`);
 }
 
 Deno.test("user detail and My account open with the account type", () =>
   withTestLocalization(async () => {
     const fixture = await authDatabase();
+    // Newer UUI lists read saved list layouts; older ones have no table.
+    const { descriptorOf } = await import("/p/the8020/db/mod.ts");
+    const { createTableSQL } = await import("/p/the8020/db/internal/ddl.ts");
+    const layouts = await import("/p/the8020/uui/tables/list_layouts.ts")
+      .catch(() => undefined);
+    if (layouts !== undefined) {
+      fixture.database.exec(
+        createTableSQL("sqlite", descriptorOf(layouts.default)),
+      );
+    }
     const users = await import("../../src/admin.ts");
     const { userDetail } = await import("./program.ts");
     try {
@@ -131,14 +149,13 @@ Deno.test("user detail and My account open with the account type", () =>
           );
           // Edit details offers the account type to administration only.
           event(channel, screen, "edit");
-          const edit = await next(channel, screen);
-          assertEquals(edit.id, "user-edit");
+          const edit = await until(channel, "user-edit");
           assertEquals(
             edit.controls.some((control) => control.bind === "technical"),
             !selfService,
           );
           event(channel, edit, "back");
-          let current = await next(channel, edit);
+          let current = await until(channel, id, screen);
           for (
             const [action, opened] of [
               ["certificates", "user-certificates"],
@@ -146,11 +163,9 @@ Deno.test("user detail and My account open with the account type", () =>
             ] as const
           ) {
             event(channel, current, action);
-            const page = await next(channel, current);
-            assertEquals(page.id, opened);
+            const page = await until(channel, opened);
             event(channel, page, "back");
-            current = await next(channel, page);
-            assertEquals(current.id, id);
+            current = await until(channel, id, current);
           }
           event(channel, current, "back");
           await pending;
