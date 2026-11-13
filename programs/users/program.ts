@@ -33,6 +33,7 @@ const UserList = z.object({ users: z.array(UserRow) });
 const Account = UserRow.pick({
   username: true,
   fullName: true,
+  technical: true,
   signIn: true,
   activeSessions: true,
 }).extend({
