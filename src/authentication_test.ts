@@ -70,12 +70,12 @@ Deno.test("certificate validity counts whole remaining days with severity", () =
     const result = certificates.certificateValidity(at(days), now);
     return [result.days, result.status, result.text, result.expired];
   };
-  assertEquals(validity(45), [45, "ok", "Expires in 45 days", false]);
-  assertEquals(validity(30), [30, "ok", "Expires in 30 days", false]);
-  assertEquals(validity(29.5), [29, "warning", "Expires in 29 days", false]);
-  assertEquals(validity(10), [10, "warning", "Expires in 10 days", false]);
-  assertEquals(validity(9.9), [9, "danger", "Expires in 9 days", false]);
-  assertEquals(validity(1), [1, "danger", "Expires in 1 day", false]);
+  assertEquals(validity(45), [45, "ok", "Days until expiry: 45", false]);
+  assertEquals(validity(30), [30, "ok", "Days until expiry: 30", false]);
+  assertEquals(validity(29.5), [29, "warning", "Days until expiry: 29", false]);
+  assertEquals(validity(10), [10, "warning", "Days until expiry: 10", false]);
+  assertEquals(validity(9.9), [9, "danger", "Days until expiry: 9", false]);
+  assertEquals(validity(1), [1, "danger", "Days until expiry: 1", false]);
   assertEquals(validity(0.5), [0, "danger", "Expires within a day", false]);
   assertEquals(validity(0), [0, "danger", "Expired", true]);
   assertEquals(validity(-3), [0, "danger", "Expired", true]);
@@ -352,7 +352,7 @@ Deno.test("users own login, session eligibility, revocation, and stale-cookie lo
     );
     assertEquals(
       [nearest?.label, nearest?.days, nearest?.status, nearest?.text],
-      ["Service caller", 6, "danger", "Expires in 6 days"],
+      ["Service caller", 6, "danger", "Days until expiry: 6"],
     );
     assertEquals(
       await certificates.nearestCertificateExpiry(

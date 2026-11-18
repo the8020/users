@@ -1,3 +1,5 @@
+import { localizedText as resolveMessage } from "/p/the8020/i18n/mod.ts";
+import { msg as messageSymbol } from "/p/the8020/users/i18n/messages.ts";
 import { kernel } from "@the8020/kernel";
 import { timingSafeEqual } from "node:crypto";
 
@@ -33,11 +35,17 @@ export async function hashPassword(
     typeof username !== "string" ||
     !/^[a-z0-9][a-z0-9_-]{1,30}[a-z0-9]$/.test(username)
   ) {
-    throw new TypeError("invalid password username");
+    throw new TypeError(
+      await resolveMessage(messageSymbol("errors.invalid_password_username")),
+    );
   }
   const bytes = passwordBytes(password);
   if (bytes === undefined) {
-    throw new TypeError("password must contain 1 to 1048576 bytes");
+    throw new TypeError(
+      await resolveMessage(
+        messageSymbol("errors.password_must_contain_1_to_1048576_bytes"),
+      ),
+    );
   }
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const hash = await digest(username, bytes, salt);

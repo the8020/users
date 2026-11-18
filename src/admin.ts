@@ -1,3 +1,5 @@
+import { localizedText as resolveMessage } from "/p/the8020/i18n/mod.ts";
+import { msg as messageSymbol } from "/p/the8020/users/i18n/messages.ts";
 import { db, type Selectable, sql } from "/p/the8020/db/mod.ts";
 import type { Database } from "/p/the8020/db/types.ts";
 import { AdminCommandError, kernel } from "@the8020/kernel";
@@ -20,12 +22,15 @@ const passwordSet = sql<number>`CASE WHEN ${
   sql.ref(Users.passwordHash)
 } = '' THEN 0 ELSE 1 END`.as("passwordSet");
 
-function validateUsername(username: string): void {
+async function validateUsername(username: string): Promise<void> {
   if (!/^[a-z0-9][a-z0-9_-]{1,30}[a-z0-9]$/.test(username)) {
     throw new AdminCommandError({
       code: "invalid_arguments",
-      message:
-        "username must contain 3-32 lowercase letters, digits, _ or -, starting and ending with a letter or digit",
+      message: await resolveMessage(
+        messageSymbol(
+          "errors.username_must_contain_3_32_lowercase_letters_digits_or_starting",
+        ),
+      ),
     });
   }
 }
@@ -94,7 +99,11 @@ async function readUser(username: string, database: Queryable = db) {
   if (record === undefined) {
     throw new AdminCommandError({
       code: "not_found",
-      message: `user ${username} was not found`,
+      message: await resolveMessage(
+        messageSymbol("errors.user_was_not_found", {
+          username: String(username),
+        }),
+      ),
     });
   }
   if (!record.enabled || record.passwordSet === 0) return summarize(record, 0);
@@ -113,7 +122,7 @@ export async function add(
   fullName = "",
   technical = false,
 ) {
-  validateUsername(username);
+  await validateUsername(username);
   await requirePermission("the8020.users.user.create", username);
   const profile = userProfile.parse({ fullName });
   const passwordHash = password === ""
@@ -134,7 +143,11 @@ export async function add(
   if (result.numInsertedOrUpdatedRows === 0n) {
     throw new AdminCommandError({
       code: "conflict",
-      message: `user ${username} already exists`,
+      message: await resolveMessage(
+        messageSymbol("errors.user_already_exists", {
+          username: String(username),
+        }),
+      ),
     });
   }
   try {
@@ -142,8 +155,12 @@ export async function add(
   } catch (error) {
     throw new AdminCommandError({
       code: "runtime_operation",
-      message:
-        `User ${username} was created; event publication failed: ${error}`,
+      message: await resolveMessage(
+        messageSymbol("errors.user_was_created_event_publication_failed", {
+          username: String(username),
+          error: String(error),
+        }),
+      ),
     });
   }
   return { user: await readUser(username) };
@@ -188,7 +205,7 @@ export async function list() {
 }
 
 export async function remove(username: string) {
-  validateUsername(username);
+  await validateUsername(username);
   await requirePermission("the8020.users.user.delete", username);
   const result = await db.transaction().execute(async (transaction) => {
     await transaction.updateTable(Users.table)
@@ -202,7 +219,11 @@ export async function remove(username: string) {
     if (removed.numDeletedRows === 0n) {
       throw new AdminCommandError({
         code: "not_found",
-        message: `user ${username} was not found`,
+        message: await resolveMessage(
+          messageSymbol("errors.user_was_not_found", {
+            username: String(username),
+          }),
+        ),
       });
     }
     await transaction.deleteFrom(Sessions.table)
@@ -215,8 +236,12 @@ export async function remove(username: string) {
   } catch (error) {
     throw new AdminCommandError({
       code: "runtime_operation",
-      message:
-        `User ${username} was deleted; event publication failed: ${error}`,
+      message: await resolveMessage(
+        messageSymbol("errors.user_was_deleted_event_publication_failed", {
+          username: String(username),
+          error: String(error),
+        }),
+      ),
     });
   }
   return result;
@@ -227,12 +252,16 @@ async function update(
   revoke: boolean,
   mutate: (transaction: DatabaseTransaction) => Promise<bigint>,
 ) {
-  validateUsername(username);
+  await validateUsername(username);
   return await db.transaction().execute(async (transaction) => {
     if (await mutate(transaction) === 0n) {
       throw new AdminCommandError({
         code: "not_found",
-        message: `user ${username} was not found`,
+        message: await resolveMessage(
+          messageSymbol("errors.user_was_not_found", {
+            username: String(username),
+          }),
+        ),
       });
     }
     if (revoke) {
@@ -259,7 +288,11 @@ export async function updateDetails(
         item.code === profile.language
       )
     ) {
-      throw new TypeError("Choose an enabled language.");
+      throw new TypeError(
+        await resolveMessage(
+          messageSymbol("errors.choose_an_enabled_language"),
+        ),
+      );
     }
   }
   return update(username, false, async (transaction) => {
@@ -341,7 +374,7 @@ export async function resetPasswords(
   recoveryUsername: string,
   password: string,
 ) {
-  validateUsername(recoveryUsername);
+  await validateUsername(recoveryUsername);
   await requirePermission("the8020.users.passwords.reset", "*");
   const passwordHash = await hashPassword(recoveryUsername, password);
   return await db.transaction().execute(async (transaction) => {
@@ -457,7 +490,7 @@ export async function revokeSession(sessionId: string) {
 }
 
 export async function revokeUserSessions(username: string) {
-  validateUsername(username);
+  await validateUsername(username);
   if (!context.authenticated || context.username !== username) {
     await requirePermission("the8020.users.user.sessions", username);
   }
