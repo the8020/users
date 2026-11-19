@@ -1,3 +1,5 @@
+import { localizedText as resolveMessage } from "/p/the8020/i18n/mod.ts";
+import { msg as messageSymbol } from "/p/the8020/users/i18n/messages.ts";
 import { kernel, type TokenClaims } from "@the8020/kernel";
 import { context } from "@the8020/context";
 import Users from "../tables/users.ts";
@@ -166,7 +168,9 @@ export async function issueAllowance(transport: "local" | "remote" = "local") {
     context.username,
   ).executeTakeFirst();
   if (!account?.enabled || account.passwordHash === "") {
-    throw new Error("This account cannot sign in");
+    throw new Error(
+      await resolveMessage(messageSymbol("errors.this_account_cannot_sign_in")),
+    );
   }
   const session = await issueSession(account, "token", transport);
   return { token: session.token, expiresAt: session.expires.toISOString() };
@@ -268,10 +272,14 @@ export async function authenticate(
     headers.set("www-authenticate", 'Basic realm="80|20", charset="UTF-8"');
   }
   headers.set("content-type", "text/plain; charset=utf-8");
-  return new Response(policy.message ?? "Authentication required", {
-    status: policy.status,
-    headers,
-  });
+  return new Response(
+    policy.message ??
+      await resolveMessage(messageSymbol("errors.authentication_required")),
+    {
+      status: policy.status,
+      headers,
+    },
+  );
 }
 
 export async function logout(request: Request): Promise<Response> {
@@ -291,7 +299,10 @@ export async function logout(request: Request): Promise<Response> {
         .where(Sessions.username, "=", claims.sub.slice(5)).execute();
     }
   } catch {
-    return new Response("Session revocation failed", { status: 503, headers });
+    return new Response(
+      await resolveMessage(messageSymbol("errors.session_revocation_failed")),
+      { status: 503, headers },
+    );
   }
   return new Response(null, { status: 204, headers });
 }

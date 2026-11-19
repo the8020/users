@@ -1,3 +1,9 @@
+import { prepareTexts } from "/p/the8020/i18n/mod.ts";
+import {
+  localizedText as resolveMessage,
+  text as formatMessage,
+} from "/p/the8020/i18n/mod.ts";
+import { msg as messageSymbol } from "/p/the8020/users/i18n/messages.ts";
 // @deno-types="../vendor/x509.ts"
 import {
   BasicConstraintsExtension,
@@ -18,7 +24,11 @@ import { certificate } from "../types/certificate.ts";
 
 export function inspectCertificate(input: string | Uint8Array) {
   if (input.length === 0 || input.length > 65536) {
-    throw new TypeError("Certificate must contain 1–65536 bytes");
+    throw new TypeError(
+      formatMessage(
+        messageSymbol("errors.certificate_must_contain_1_65536_bytes"),
+      ),
+    );
   }
   if (input instanceof Uint8Array && input[0] !== 0x30) {
     input = new TextDecoder("utf-8", { fatal: true }).decode(input);
@@ -29,7 +39,11 @@ export function inspectCertificate(input: string | Uint8Array) {
       .test(input)
   ) {
     throw new TypeError(
-      "Provide one public PEM certificate, without a private key",
+      formatMessage(
+        messageSymbol(
+          "errors.provide_one_public_pem_certificate_without_a_private_key",
+        ),
+      ),
     );
   }
   const parsed = new X509Certificate(
@@ -38,23 +52,47 @@ export function inspectCertificate(input: string | Uint8Array) {
   const der = new Uint8Array(parsed.rawData);
   // Some parsers accept the first DER object and ignore trailing input.
   if (fromBER(parsed.rawData).offset !== der.length) {
-    throw new TypeError("Provide one DER certificate without trailing data");
+    throw new TypeError(
+      formatMessage(
+        messageSymbol(
+          "errors.provide_one_der_certificate_without_trailing_data",
+        ),
+      ),
+    );
   }
   if (parsed.getExtension(BasicConstraintsExtension)?.ca) {
-    throw new TypeError("A client certificate must not be a CA");
+    throw new TypeError(
+      formatMessage(
+        messageSymbol("errors.a_client_certificate_must_not_be_a_ca"),
+      ),
+    );
   }
   const signing = parsed.getExtension(KeyUsagesExtension);
   if (signing && !(signing.usages & KeyUsageFlags.digitalSignature)) {
-    throw new TypeError("Certificate does not permit signing");
+    throw new TypeError(
+      formatMessage(
+        messageSymbol("errors.certificate_does_not_permit_signing"),
+      ),
+    );
   }
   const usage = parsed.getExtension(ExtendedKeyUsageExtension)?.usages;
   if (
     usage !== undefined && !usage.includes("1.3.6.1.5.5.7.3.2") &&
     !usage.includes("2.5.29.37.0")
-  ) throw new TypeError("Certificate does not permit client authentication");
+  ) {
+    throw new TypeError(
+      formatMessage(
+        messageSymbol(
+          "errors.certificate_does_not_permit_client_authentication",
+        ),
+      ),
+    );
+  }
   const now = new Date();
   if (parsed.notBefore > now || parsed.notAfter <= now) {
-    throw new TypeError("Certificate is not currently valid");
+    throw new TypeError(
+      formatMessage(messageSymbol("errors.certificate_is_not_currently_valid")),
+    );
   }
   return {
     fingerprint: createHash("sha256").update(der).digest("hex"),
@@ -76,10 +114,14 @@ export function certificateValidity(expiresAt: Date, now = new Date()) {
   const remaining = expiresAt.getTime() - now.getTime();
   const days = Math.max(0, Math.floor(remaining / DAY_MS));
   const text = remaining <= 0
-    ? "Expired"
+    ? formatMessage(messageSymbol("errors.expired"))
     : days === 0
-    ? "Expires within a day"
-    : `Expires in ${days} ${days === 1 ? "day" : "days"}`;
+    ? formatMessage(messageSymbol("errors.expires_within_a_day"))
+    : formatMessage(
+      messageSymbol("errors.expires_in", {
+        days: String(days),
+      }),
+    );
   const status = remaining <= 0 || days < CERTIFICATE_URGENT_DAYS
     ? "danger" as const
     : days < CERTIFICATE_WARNING_DAYS
@@ -111,6 +153,7 @@ async function authorize(username: string) {
 }
 
 export async function listCertificates(username: string) {
+  await prepareTexts(messageSymbol("errors.expires_in"));
   await authorize(username);
   return await Certificates.selectAll()
     .where(Certificates.username, "=", username)
@@ -124,6 +167,9 @@ export async function addCertificate(
   input: string | Uint8Array,
 ) {
   await authorize(username);
+  await prepareTexts(
+    messageSymbol("errors.certificate_must_contain_1_65536_bytes"),
+  );
   const details = inspectCertificate(input);
   const name = certificate.shape.label.parse(label);
   return await transaction({ timeoutMs: 2000 }, async (tx) => {
@@ -134,7 +180,7 @@ export async function addCertificate(
     if (account.numUpdatedRows === 0n) {
       throw new AdminCommandError({
         code: "not_found",
-        message: "User not found",
+        message: await resolveMessage(messageSymbol("errors.user_not_found")),
       });
     }
     const count = await tx.selectFrom(Certificates.table)
@@ -143,7 +189,9 @@ export async function addCertificate(
     if (count.count >= 100) {
       throw new AdminCommandError({
         code: "conflict",
-        message: "A user may enroll at most 100 certificates",
+        message: await resolveMessage(
+          messageSymbol("errors.a_user_may_enroll_at_most_100_certificates"),
+        ),
       });
     }
     const result = await tx.insertInto(Certificates.table).values({
@@ -156,7 +204,9 @@ export async function addCertificate(
     if (result.numInsertedOrUpdatedRows === 0n) {
       throw new AdminCommandError({
         code: "conflict",
-        message: "Certificate is already enrolled",
+        message: await resolveMessage(
+          messageSymbol("errors.certificate_is_already_enrolled"),
+        ),
       });
     }
     return details;
